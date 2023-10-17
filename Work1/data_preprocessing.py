@@ -70,9 +70,9 @@ class Dataset():
                      'n_features': len(data.columns),
                      'n_instances': len(data)}
         stats = {'Nulls':data.isnull().sum(0).values,
-                 'Mins': data.min().values,
+                 'Min': data.min().values,
                  'Max': data.max().values,
-                 'Means': data.mean().values,
+                 'Mean': data.mean().values,
                  'StD': data.std().values,
                  'Variance': data.var().values}
         stats = pd.DataFrame.from_dict(stats,orient = 'index', columns=data.columns)
