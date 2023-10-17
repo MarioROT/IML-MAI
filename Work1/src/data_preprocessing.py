@@ -20,8 +20,12 @@ class Dataset():
     of the dataset can be obtained by calling the statstics method. The processed data can be
     save using te save method."""
     def __init__(self, 
-                 data_path: str):
+                 data_path: str,
+                 with_mean: bool = True, 
+                 with_std: bool = True):
         self.data_path = Path(data_path)
+        self.wmean = with_mean
+        self.wstd = with_std
         self.raw_data = None
         self.metadata = None
         self.df = None 
@@ -70,9 +74,9 @@ class Dataset():
                      'n_features': len(data.columns),
                      'n_instances': len(data)}
         stats = {'Nulls':data.isnull().sum(0).values,
-                 'Mins': data.min().values,
+                 'Min': data.min().values,
                  'Max': data.max().values,
-                 'Means': data.mean().values,
+                 'Mean': data.mean().values,
                  'StD': data.std().values,
                  'Variance': data.var().values}
         stats = pd.DataFrame.from_dict(stats,orient = 'index', columns=data.columns)
@@ -86,25 +90,25 @@ class Dataset():
                 df[col] = df[col].str.decode('utf-8')
         return df
     @staticmethod
-    def remove_predicted_value(df: pd.DataFrame) -> pd.DataFrame:
+    def remove_predicted_value(df: pd.DataFrame):
         return df.iloc[:, :-1]
     @staticmethod
-    def get_predicted_value(df: pd.DataFrame) -> pd.DataFrame:
+    def get_predicted_value(df: pd.DataFrame):
         return df.iloc[:, -1]
     @staticmethod
-    def check_null_values(df: pd.DataFrame) -> pd.Series:
+    def check_null_values(df: pd.DataFrame):
         return df.isnull().sum()
     @staticmethod
     def encode_labels(labels, classes_relation):
         num_classes = [classes_relation[item] for item in labels]
         return num_classes
     @staticmethod
-    def standardization(df: pd.DataFrame, columns=None) -> pd.DataFrame:
+    def standardization(df: pd.DataFrame, columns=None, wmean=True, wstd=True):
         # numerical features
         num_features = df.select_dtypes(include=np.number).columns
         num_transformer = Pipeline(steps=[
             ('replace_nan', SimpleImputer(strategy='mean')),
-            ('scaler', StandardScaler())])
+            ('scaler', StandardScaler(with_mean=wmean,with_std=wstd))])
         # categorical features
         cat_features = df.select_dtypes(exclude=np.number).columns
         cat_transformer = Pipeline(steps=[
