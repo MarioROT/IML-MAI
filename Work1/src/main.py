@@ -1,9 +1,22 @@
 from kmeans import KMeans
 from kmodes import KModes
+from kprototypes import KPrototypes
 from sklearn.cluster import KMeans as SKLearnKMeans
 from sklearn.preprocessing import StandardScaler
 from initialvalidation import map_clusters_to_labels
 from data_preprocessing import Dataset
+
+def process_kprototypes(data_path):
+    dataset = Dataset(data_path)
+    X = dataset.processed_data.iloc[:, :-1]
+    true_labels = dataset.processed_data['y_true'].values
+
+    # My KMeans
+    kprot = KPrototypes(k=3)
+    kprot.fit(X)
+    labels = kprot.predict(X)
+    accuracy = map_clusters_to_labels(labels, true_labels)
+    print(f"My KPrototypes Accuracy: {accuracy * 100:.2f}%")
 
 
 def process_kmeans(data_path):
@@ -51,7 +64,8 @@ def process_kmodes(data_path):
 if __name__ == "__main__":
     #print("Processing KMeans on waveform.arff")
     # process_kmeans('../data/raw/waveform.arff')
-    process_kmeans('../data/raw/iris.arff')
+    # process_kmeans('../data/raw/iris.arff')
+    process_kprototypes('../data/raw/iris.arff')
 
     #print("\nProcessing KModes on dataset_24_mushroom.arff")
     # process_kmodes('../data/raw/dataset_24_mushroom.arff')
