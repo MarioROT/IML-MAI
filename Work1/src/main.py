@@ -50,7 +50,8 @@ def process_kmodes(data_path):
 
 if __name__ == "__main__":
     #print("Processing KMeans on waveform.arff")
-    process_kmeans('../data/raw/waveform.arff')
+    # process_kmeans('../data/raw/waveform.arff')
+    process_kmeans('../data/raw/iris.arff')
 
     #print("\nProcessing KModes on dataset_24_mushroom.arff")
-    process_kmodes('../data/raw/dataset_24_mushroom.arff')
+    # process_kmodes('../data/raw/dataset_24_mushroom.arff')
