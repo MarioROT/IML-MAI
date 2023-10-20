@@ -47,21 +47,20 @@ class Dataset():
         self.raw_data = self.string_decode(data)
         return self.raw_data, self.metadata
 
-
     def preprocessing(self):
         print(f'---Preprocessing {self.data_path.name} dataset---')
         self.df, meta = self.import_raw_dataset()
+        num_samples_initial, num_features_initial = self.df.shape
         self.y_true = self.get_predicted_value(self.df)
-        self.classes_relation =  {k:v for v,k in enumerate(set(self.y_true))}
+        self.classes_relation = {k: v for v, k in enumerate(set(self.y_true))}
         self.df = self.remove_predicted_value(self.df)
+        num_samples_after_removal, num_features_after_removal = self.df.shape
         nulls = self.check_null_values(self.df)
-        if nulls.sum() != 0:
-            print(f'There is nulls values: {nulls}')
-        else:
-            print(f'Nan values: 0')
         self.processed_data = self.standardization(self.df)
+        num_samples_final, num_features_final = self.processed_data.shape
         self.processed_data['y_true'] = self.encode_labels(self.y_true, self.classes_relation)
-
+        print(f"Initial Dataset: {num_samples_initial} samples, {num_features_initial} features")
+        print(f"Final Dataset: {num_samples_final} samples, {num_features_final} features")
         return self.processed_data
 
     def save(self, filename, dir = ''):
@@ -150,4 +149,4 @@ class Dataset():
 
 if __name__ == '__main__':
     data_path = Path('../data/raw/iris.csv')
-    dataset = MLDataset(data_path)
+    dataset = Dataset(data_path)
