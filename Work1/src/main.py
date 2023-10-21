@@ -1,71 +1,65 @@
-from kmeans import KMeans
-from kmodes import KModes
-from kprototypes import KPrototypes
-from sklearn.cluster import KMeans as SKLearnKMeans
-from sklearn.preprocessing import StandardScaler
-from initialvalidation import map_clusters_to_labels
-from data_preprocessing import Dataset
+import argparse
+import timeit
 
-def process_kprototypes(data_path):
-    dataset = Dataset(data_path)
-    X = dataset.processed_data.iloc[:, :-1]
-    true_labels = dataset.processed_data['y_true'].values
+from utils.data_preprocessing import Dataset
+from algorithms.kmeans import KMeans
+from algorithms.kmodes import KModes
+from algorithms.kprototypes import KPrototypes
+from algorithms.DBSCAN import DBSCAN_Clustering
+from algorithms.BIRCH import BIRCH_Clustering
+from evaluation.metrics import performance_eval
 
-    # My KMeans
-    kprot = KPrototypes(k=3)
-    kprot.fit(X)
-    labels = kprot.predict(X)
-    accuracy = map_clusters_to_labels(labels, true_labels)
-    print(f"My KPrototypes Accuracy: {accuracy * 100:.2f}%")
+# Arguments parser from terminal
+parser = argparse.ArgumentParser()
 
+parser.add_argument("-ds", "--datasets", nargs='+', help = "['iris', 'vowel', 'cmc']", default=['iris', 'cmc', 'vowel'])
+parser.add_argument("-ags", "--algorithms", nargs='+', help = "['kmeans', 'kmodes', 'kprot', 'dbscan', 'birch']", default=['kmeans', 'kmodes', 'kprot', 'dbscan', 'birch'])
 
-def process_kmeans(data_path):
-    dataset = Dataset(data_path)
-    X = dataset.processed_data.iloc[:, :-1].values
-    true_labels = dataset.processed_data['y_true'].values
+args = parser.parse_args()
 
-    # My KMeans
-    kmeans = KMeans(k=3)
-    kmeans.fit(X)
-    labels = kmeans.predict(X)
-    accuracy = map_clusters_to_labels(labels, true_labels)
-    print(f"My KMeans Accuracy: {accuracy * 100:.2f}%")
+# Configurations
+algorithms = {'kmeans':KMeans,
+              'kmodes':KModes,
+              'kprot': KPrototypes,
+              'dbscan': DBSCAN_Clustering,
+              'birch': BIRCH_Clustering}
 
-    # Scikit-learn KMeans
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-    sk_kmeans = SKLearnKMeans(n_clusters=3, random_state=42, n_init=10)
-    sk_kmeans.fit(X)
-    sk_labels = sk_kmeans.labels_
-    sk_accuracy = map_clusters_to_labels(sk_labels, true_labels)
-    print(f"Scikit-learn KMeans Accuracy: {sk_accuracy * 100:.2f}%")
+algorithm_params = {'kmeans':{'k':3},
+                    'kmodes':{'k':3},
+                    'kprot':{'k':3},
+                    'dbscan': {'eps':5, 'min_samples':20, 'metric':'euclidean'},
+                    'birch': {'threshold': 1, 'branching_factor': 20}}
 
-    #print(labels)
-    #print(sk_labels)
-    #print(true_labels)
+for dataset in args.datasets:
+    
+    data = Dataset(f'../data/raw/{dataset}.arff')
+    X = data.processed_data.iloc[:,:-1].values
+    Y = data.processed_data.iloc[:,-1].values
 
+    print(f'\n------- Results for {dataset} dataset:')
+    for agm in args.algorithms:
+        if agm in ['kmeans', 'kmodes', 'kprot']:
+            algorithm = algorithms[agm](**algorithm_params[agm])
+            algorithm.fit(X)
+            predictions = algorithm.predict(X)
+            print(f'\n-- Algorithm {agm}')
+            performance_eval(predictions, Y)
 
-def process_kmodes(data_path):
-    dataset = Dataset(data_path)
-    X = dataset.processed_data.iloc[:, :-1].values.astype(int)
-    true_labels = dataset.processed_data['y_true'].values
+        if agm == 'dbscan':
+            algorithm = algorithms[agm](X, **algorithm_params[agm])
+            if best_params:
+                best_params, best_score, best_num_clusters = algorithm.grid_search()
+                algorithm_params[agm] = best_params
+            centroids, clusters = algorithm.dbscan_clustering(**algorithm_params[agm]) 
+            print(f'\n-- Algorithm {agm}')
+            performance_eval(clusters, Y)
 
-    # Kmodes
-    kmodes = KModes(n_clusters=3, random_state=42)
-    kmodes.fit(X)
-    kmodes_labels = kmodes.labels_
-    kmodes_accuracy = map_clusters_to_labels(kmodes_labels, true_labels)
-    print(f"Kmodes Accuracy: {kmodes_accuracy * 100:.2f}%")
+        if agm == 'brich':
+            algorithm = algorithms[agm](X, **algorithm_params[agm])
+            if best_params:
+                best_params, best_score, best_num_clusters = algorithm.grid_search()
+                algorithm_params[agm] = best_params
+            centroids, clusters = algorithm.birch_clustering(**algorithm_params[agm]) 
+            print(f'\n-- Algorithm {agm}')
+            performance_eval(clusters, Y)
 
-    #print(kmodes_labels)
-    #print(true_labels)
-
-
-if __name__ == "__main__":
-    #print("Processing KMeans on waveform.arff")
-    # process_kmeans('../data/raw/waveform.arff')
-    # process_kmeans('../data/raw/iris.arff')
-    process_kprototypes('../data/raw/iris.arff')
-
-    #print("\nProcessing KModes on dataset_24_mushroom.arff")
-    # process_kmodes('../data/raw/dataset_24_mushroom.arff')

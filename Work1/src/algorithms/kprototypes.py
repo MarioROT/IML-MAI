@@ -1,4 +1,6 @@
 import numpy as np
+import pandas as pd
+
 class KPrototypes:
     def __init__(self, k, max_iters=100, gamma=None, gamma_factor=0.5):
         self.k = k
@@ -9,6 +11,8 @@ class KPrototypes:
 
 
     def fit(self, data):
+        if not isinstance(data, pd.DataFrame):
+            data = pd.DataFrame(data)
         # 2. Select k random instances {s1, s2,… sk} as seeds.
         self.centroids = data.iloc[np.random.choice(data.shape[0], self.k, replace=False)].copy()
         prev_labels = np.zeros(data.shape[0])
@@ -28,6 +32,8 @@ class KPrototypes:
             self.labels_ = self._assign_to_clusters(data, prev_labels)
 
     def predict(self, data):
+        if not isinstance(data, pd.DataFrame):
+            data = pd.DataFrame(data)
         return self._assign_to_clusters(data, predict = True)
 
     def _assign_to_clusters(self, data, prev_labels = False, predict = False):
