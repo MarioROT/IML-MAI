@@ -36,14 +36,14 @@ algorithms = {'kmeans':KMeans,
 #                     'birch': {'threshold': 1, 'branching_factor': 20}}
 
 algorithm_params = {'kmeans':{'k':[3,5,7]},
-                    'kmodes':{'k':[3,5,7]},
+                    'kmodes':{'n_clusters':[3,5,7]},
                     'kprot':{'k':[3,5,7]},
                     'dbscan': {'eps':5, 'min_samples':20, 'metric':'euclidean'},
                     'birch': {'threshold': 1, 'branching_factor': 20}}
 
 # Algoithms execution over datasets
 for dataset in args.datasets:
-    data = Dataset(f'../data/raw/{dataset}.arff', method=args.dataset_method, cat_transf=args.cat_encoding)
+    data = Dataset(f'data/raw/{dataset}.arff', method=args.dataset_method, cat_transf=args.cat_encoding)
     X = data.processed_data.iloc[:,:-1].values
     Y = data.processed_data.iloc[:,-1].values
 

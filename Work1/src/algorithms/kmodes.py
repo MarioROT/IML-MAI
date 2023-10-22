@@ -10,6 +10,7 @@ class KModes:
         self.labels_ = None
 
     def fit(self, X):
+        X = X.astype(np.uint)
         np.random.seed(self.random_state)
 
         # Insert the first K objects into K new clusters.
@@ -34,6 +35,10 @@ class KModes:
 
         self.labels_ = labels
         return self
+    
+    def predict(self, X):
+        X = X.astype(np.uint)
+        return np.argmin(self._dissimilarity(X), axis=1)
 
     def _dissimilarity(self, X):
         """Compute dissimilarity matrix."""
