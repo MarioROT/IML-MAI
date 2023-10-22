@@ -8,6 +8,7 @@ from algorithms.kmodes import KModes
 from algorithms.kprototypes import KPrototypes
 from algorithms.DBSCAN import DBSCANClustering
 from algorithms.BIRCH import BIRCHClustering
+from sklearn.cluster import DBSCAN, Birch
 from evaluation.metrics import performance_eval
 
 # Arguments parser from terminal
@@ -21,7 +22,7 @@ parser.add_argument("-ce", "--cat_encoding", help = "['onehot', 'ordinal']", def
 
 args = parser.parse_args()
 
-# Configurations
+# Settings
 algorithms = {'kmeans':KMeans,
               'kmodes':KModes,
               'kprot': KPrototypes,
@@ -35,13 +36,13 @@ algorithms = {'kmeans':KMeans,
 #                     'birch': {'threshold': 1, 'branching_factor': 20}}
 
 algorithm_params = {'kmeans':{'k':[3,5,7]},
-                    'kmodes':{'k':3},
+                    'kmodes':{'k':[3,5,7]},
                     'kprot':{'k':[3,5,7]},
                     'dbscan': {'eps':5, 'min_samples':20, 'metric':'euclidean'},
                     'birch': {'threshold': 1, 'branching_factor': 20}}
 
+# Algoithms execution over datasets
 for dataset in args.datasets:
-    
     data = Dataset(f'../data/raw/{dataset}.arff', method=args.dataset_method, cat_transf=args.cat_encoding)
     X = data.processed_data.iloc[:,:-1].values
     Y = data.processed_data.iloc[:,-1].values
@@ -59,21 +60,14 @@ for dataset in args.datasets:
                 print(f'\n-- Algorithm {agm}')
                 performance_eval(X, predictions, Y)
 
-        if agm == 'dbscan':
-            algorithm = algorithms[agm](X, **algorithm_params[agm])
+        if agm in ['dbscan', 'birch']:
             if args.best_params:
-                best_params, best_score, best_num_clusters = algorithm.grid_search()
-                algorithm_params[agm] = best_params
-            centroids, clusters = algorithm.dbscan_clustering(**algorithm_params[agm]) 
-            print(f'\n-- Algorithm {agm}')
-            performance_eval(clusters, Y)
-
-        if agm == 'brich':
-            algorithm = algorithms[agm](X, **algorithm_params[agm])
-            if args.best_params:
-                best_params, best_score, best_num_clusters = algorithm.grid_search()
-                algorithm_params[agm] = best_params
-            centroids, clusters = algorithm.birch_clustering(**algorithm_params[agm]) 
-            print(f'\n-- Algorithm {agm}')
-            performance_eval(clusters, Y)
-
+                algorithm = algorithms[agm](X, Y)
+                algorithm.search_best_params()
+                algorithm.print_best_params()
+            else:
+                algorithm = Birch if agm == 'birch' else DBSCAN
+                algorithm = algorithm(**algorithm_params[agm])
+                predictions = algorithm.fit_predict(X)
+                print(f'\n-- Algorithm {agm}')
+                performance_eval(X, predictions, Y)
