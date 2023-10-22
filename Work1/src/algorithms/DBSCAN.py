@@ -1,81 +1,81 @@
+
 import os
 import sys
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+
 sys.path.append('../')
-import numpy as np
-from pathlib import Path
-from utils.data_preprocessing import Dataset
-from sklearn.metrics import silhouette_score, pairwise_distances
-from itertools import product
+from sklearn import metrics
 from sklearn.cluster import DBSCAN
+from itertools import product
+import numpy as np
+from utils.data_preprocessing import Dataset
 
-class DBSCAN_Clustering:
 
-    def __init__(self, X, param_grid):
-        print("---Running DBSCAN---")
+class DBSCANClustering:
+    def __init__(self, X, y):
+        print("---Running DBSCAN Clustering---")
         self.X = X
-        self.param_grid = param_grid
+        self.y_true = y
+        self.eps_values = [0.1, 0.5, 1.0, 1.5, 2.0, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 9, 10]
+        self.min_samples_values = [3, 5, 7, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80]
 
-    def grid_search(self):
-        best_score = -1
-        best_params = {}
-        best_num_clusters = 0
+        self.X = StandardScaler().fit_transform(self.X)
 
-        # Perform grid search
-        for params in product(*self.param_grid.values()):
-            param_dict = dict(zip(self.param_grid.keys(), params))
-            dbscan = DBSCAN(**param_dict)
-            distance_matrix = pairwise_distances(self.X, metric=param_dict['metric'])
-            labels = dbscan.fit_predict(distance_matrix)
+        self.best_params = {
+            'homogeneity': {'score': -1, 'eps': None, 'min_samples': None, 'num_clusters': None},
+            'completeness': {'score': -1, 'eps': None, 'min_samples': None, 'num_clusters': None},
+            'v_measure': {'score': -1, 'eps': None, 'min_samples': None, 'num_clusters': None},
+            'adjusted_rand': {'score': -1, 'eps': None, 'min_samples': None, 'num_clusters': None},
+            'adjusted_mutual_info': {'score': -1, 'eps': None, 'min_samples': None, 'num_clusters': None},
+            'silhouette': {'score': -1, 'eps': None, 'min_samples': None, 'num_clusters': None}
+        }
 
-            # Ignore single clusters (noise)
-            if len(set(labels)) > 1:
-                silhouette_avg = silhouette_score(self.X, labels)
-                num_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+    def _calculate_metrics(self, labels):
+        metrics_scores = {
+            'homogeneity': metrics.homogeneity_score(self.y_true, labels),
+            'completeness': metrics.completeness_score(self.y_true, labels),
+            'v_measure': metrics.v_measure_score(self.y_true, labels),
+            'adjusted_rand': metrics.adjusted_rand_score(self.y_true, labels),
+            'adjusted_mutual_info': metrics.adjusted_mutual_info_score(self.y_true, labels),
+            'silhouette': metrics.silhouette_score(self.X, labels)
+        }
+        return metrics_scores
 
-                # Update best parameters if silhouette score is higher
-                if silhouette_avg > best_score:
-                    best_score = silhouette_avg
-                    best_params = param_dict
-                    best_num_clusters = num_clusters
+    def search_best_params(self):
+        for eps, min_samples in product(self.eps_values, self.min_samples_values):
+            db = DBSCAN(eps=eps, min_samples=min_samples, metric='euclidean').fit(self.X)
+            unique_labels = np.unique(db.labels_)
 
-        return best_params, best_score, best_num_clusters
+            if len(unique_labels) == 1:
+                continue
 
-    def dbscan_clustering(self, best_params):
-        dbscan_model = DBSCAN(**best_params)
-        distance_matrix = pairwise_distances(self.X, metric=best_params['metric'])
-        labels = dbscan_model.fit_predict(distance_matrix)
+            labels = db.labels_
+            metrics_scores = self._calculate_metrics(labels)
 
-        # Extract clusters
-        unique_labels = np.unique(labels)
-        clusters = [self.X[labels == label] for label in unique_labels if label != -1]  # Ignore noise points (-1 label)
+            for metric_name, score in metrics_scores.items():
+                if score > self.best_params[metric_name]['score']:
+                    self.best_params[metric_name]['score'] = score
+                    self.best_params[metric_name]['eps'] = eps
+                    self.best_params[metric_name]['min_samples'] = min_samples
+                    self.best_params[metric_name]['num_clusters'] = len(set(labels)) - (1 if -1 in labels else 0)
 
-        # Compute centroids for valid clusters
-        centroids = [np.mean(cluster, axis=0) for cluster in clusters]
-
-        return centroids, clusters
+    def print_best_params(self):
+        for metric_name, params in self.best_params.items():
+            print(f"Best Parameters for {metric_name.capitalize()}:")
+            print(f"EPS: {params['eps']}, Min Samples: {params['min_samples']}")
+            print(f"Best {metric_name.capitalize()} Score: {params['score']:.3f}")
+            print(f"Number of Clusters: {params['num_clusters']}")
+            print("------")
 
 if __name__ == "__main__":
-    # Load your dataset and perform preprocessing if needed
-
-    data_path = '../data/raw/vowel.arff'  # Change the path to your ARFF file
+    # Load Dataset:
+    data_path = '../../data/raw/vowel.arff'  # Change the path to your ARFF file
     dataset = Dataset(data_path)
     X = dataset.processed_data.drop(columns=['y_true']).values  # Use processed_data from the Dataset object
+    y = dataset.y_true
 
-    # Define the parameter grid for grid search
-    param_grid = {
-        'eps': [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        'min_samples': [ 5, 10, 15, 20, 25, 30, 35, 40],
-        'metric': ['euclidean', 'manhattan', 'cosine']
-    }
+    DBSCANClustering = DBSCANClustering(X, y)
+    DBSCANClustering.search_best_params()
+    DBSCANClustering.print_best_params()
 
-    # Instantiate DBSCAN_Clustering class
-    dbscan_clustering = DBSCAN_Clustering(X, param_grid)
-
-    # Perform grid search
-    best_params, best_score, best_num_clusters = dbscan_clustering.grid_search()
-    print("Best Parameters:", best_params)
-    print("Best Silhouette Score:", best_score)
-    print("Num of clusters (excluding noise):", best_num_clusters)
-
-    # Perform clustering using the best parameters
-    centroids, clusters = dbscan_clustering.dbscan_clustering(best_params)

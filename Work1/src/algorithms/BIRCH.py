@@ -1,75 +1,68 @@
+from itertools import product
+
+from sklearn import metrics
+from sklearn.cluster import Birch
 import sys
 sys.path.append('../')
-import numpy as np
-from sklearn.cluster import Birch
-from sklearn.metrics import silhouette_score
-from itertools import product
 from utils.data_preprocessing import Dataset
 
-class BIRCH_Clustering:
 
-    def __init__(self, X, param_grid):
+class BIRCHClustering:
+    def __init__(self, X, y):
         print("---Running BIRCH Clustering---")
         self.X = X
-        self.param_grid = param_grid
+        self.y_true = y
+        self.threshold_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+        self.branching_factor_values = [10, 20, 30, 40, 50]
+        self.best_params = {
+            'homogeneity': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
+            'completeness': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
+            'v_measure': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
+            'adjusted_rand': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
+            'adjusted_mutual_info': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
+            'silhouette': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None}
+        }
 
-    def grid_search(self):
-        best_score = -1
-        best_params = {}
-        best_num_clusters = 0
+    def _calculate_metrics(self, labels):
+        metrics_scores = {
+            'homogeneity': metrics.homogeneity_score(self.y_true, labels),
+            'completeness': metrics.completeness_score(self.y_true, labels),
+            'v_measure': metrics.v_measure_score(self.y_true, labels),
+            'adjusted_rand': metrics.adjusted_rand_score(self.y_true, labels),
+            'adjusted_mutual_info': metrics.adjusted_mutual_info_score(self.y_true, labels),
+            'silhouette': metrics.silhouette_score(self.X, labels)
+        }
+        return metrics_scores
 
-        # Perform grid search
-        for params in product(*self.param_grid.values()):
-            param_dict = dict(zip(self.param_grid.keys(), params))
-            birch = Birch(threshold=param_dict['threshold'], branching_factor=param_dict['branching_factor'])
-            cluster_labels = birch.fit_predict(self.X)
+    def search_best_params(self):
+        for threshold, branching_factor in product(self.threshold_values, self.branching_factor_values):
+            birch = Birch(threshold=threshold, branching_factor=branching_factor)
+            birch.fit(self.X)
+            labels = birch.labels_
+            metrics_scores = self._calculate_metrics(labels)
 
-            # Ignore single clusters (noise)
-            if len(set(cluster_labels)) > 1:
-                silhouette_avg = silhouette_score(self.X, cluster_labels)
+            for metric_name, score in metrics_scores.items():
+                if score > self.best_params[metric_name]['score']:
+                    self.best_params[metric_name]['score'] = score
+                    self.best_params[metric_name]['threshold'] = threshold
+                    self.best_params[metric_name]['branching_factor'] = branching_factor
+                    self.best_params[metric_name]['num_clusters'] = len(set(labels)) - (1 if -1 in labels else 0)
 
-                # Update best parameters if silhouette score is higher
-                if silhouette_avg > best_score:
-                    best_score = silhouette_avg
-                    best_params = param_dict
-                    best_num_clusters = len(set(cluster_labels)) - (1 if -1 in cluster_labels else 0)
-
-        return best_params, best_score, best_num_clusters
-
-    def birch_clustering(self, best_params):
-        birch_model = Birch(**best_params)
-        cluster_labels = birch_model.fit_predict(self.X)
-
-        # Extract clusters
-        unique_labels = np.unique(cluster_labels)
-        clusters = [self.X[cluster_labels == label] for label in unique_labels if label != -1]  # Ignore noise points (-1 label)
-
-        # Compute centroids for valid clusters
-        centroids = [np.mean(cluster, axis=0) for cluster in clusters]
-
-        return centroids, clusters
+    def print_best_params(self):
+        for metric_name, params in self.best_params.items():
+            print(f"Best Parameters for {metric_name.capitalize()}:")
+            print(f"Threshold: {params['threshold']}, Branching Factor: {params['branching_factor']}")
+            print(f"Best {metric_name.capitalize()} Score: {params['score']:.3f}")
+            print(f"Number of Clusters: {params['num_clusters']}")
+            print("------")
 
 if __name__ == "__main__":
-    # Load your dataset and perform preprocessing if needed
-
-    data_path = '../data/raw/vowel.arff'  # Change the path to your ARFF file
+    # Load Dataset:
+    data_path = '../../data/raw/waveform.arff'  # Change the path to your ARFF file
     dataset = Dataset(data_path)
     X = dataset.processed_data.drop(columns=['y_true']).values  # Use processed_data from the Dataset object
+    y = dataset.y_true
 
-    # Define the parameter grid for grid search
-    param_grid = {
-        'threshold': [0.2, 0.5, 1, 1.5, 2],
-        'branching_factor': [3, 5, 7, 10, 20, 30, 40]
-    }
-
-    # Instantiate BIRCH_Clustering class
-    birch_clustering = BIRCH_Clustering(X, param_grid)
-
-    # Perform grid search
-    best_params, best_score, best_num_clusters = birch_clustering.grid_search()
-    print("Best Parameters:", best_params)
-    print("Best Silhouette Score:", best_score)
-    print("Num of clusters (excluding noise):", best_num_clusters)
-
-    # Perform clustering using the best parameters
-    centroids, clusters = birch_clustering.birch_clustering(best_params)
+    BIRCHClustering = BIRCHClustering(X, y)
+    BIRCHClustering.search_best_params()
+    BIRCHClustering.print_best_params()
