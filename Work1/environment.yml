@@ -1,0 +1,6 @@
+name: IML23
+channels:
+  - defaults
+dependencies:
+  - python=3.7
+prefix: C:\Users\mario\anaconda3\envs\IML23
