@@ -22,10 +22,14 @@ class Dataset():
     def __init__(self, 
                  data_path: str,
                  with_mean: bool = True, 
-                 with_std: bool = True):
+                 with_std: bool = True,
+                 method: str = 'numeric',
+                 cat_transf: str = 'onehot'):
         self.data_path = Path(data_path)
         self.wmean = with_mean
         self.wstd = with_std
+        self.method = method
+        self.cat_transf = cat_transf
         self.raw_data = None
         self.metadata = None
         self.df = None 
@@ -56,7 +60,7 @@ class Dataset():
         self.df = self.remove_predicted_value(self.df)
         num_samples_after_removal, num_features_after_removal = self.df.shape
         nulls = self.check_null_values(self.df)
-        self.processed_data = self.standardization(self.df)
+        self.processed_data = self.standardization(self.df, self.method, self.cat_transf, self.wmean, self.wstd)
         num_samples_final, num_features_final = self.processed_data.shape
         self.processed_data['y_true'] = self.encode_labels(self.y_true, self.classes_relation)
         print(f"Initial Dataset: {num_samples_initial} samples, {num_features_initial} features")
@@ -102,17 +106,39 @@ class Dataset():
         num_classes = [classes_relation[item] for item in labels]
         return num_classes
     @staticmethod
-    def standardization(df: pd.DataFrame, columns=None, wmean=True, wstd=True):
+    def standardization(df: pd.DataFrame, method, cat_transf, wmean=True, wstd=True):
         # numerical features
         num_features = df.select_dtypes(include=np.number).columns
-        num_transformer = Pipeline(steps=[
-            ('replace_nan', SimpleImputer(strategy='mean')),
-            ('scaler', StandardScaler(with_mean=wmean,with_std=wstd))])
-        # categorical features
         cat_features = df.select_dtypes(exclude=np.number).columns
-        cat_transformer = Pipeline(steps=[
-            ('replace_nan', SimpleImputer(strategy='most_frequent')),
-            ('encoder', OneHotEncoder())])
+        if method == 'numeric':
+            num_transformer = Pipeline(steps=[
+                ('replace_nan', SimpleImputer(strategy='mean')),
+                ('scaler', StandardScaler(with_mean=wmean,with_std=wstd))])
+            # categorical features
+            if cat_transf == 'onehot':
+                cat_transformer = Pipeline(steps=[
+                    ('replace_nan', SimpleImputer(strategy='most_frequent')),
+                    ('encoder', OneHotEncoder())])
+            elif cat_transf == 'ordinal':
+                cat_transformer = Pipeline(steps=[
+                    ('replace_nan', SimpleImputer(strategy='most_frequent')),
+                    ('encoder', OrdinalEncoder())])
+        elif method == 'categorical':
+            num_transformer = Pipeline(steps=[
+                ('replace_nan', SimpleImputer(strategy='mean')),
+                ('scaler', StandardScaler(with_mean=wmean,with_std=wstd))])
+            # categorical features
+            cat_transformer = Pipeline(steps=[
+                ('replace_nan', SimpleImputer(strategy='most_frequent')),
+                ('encoder', OneHotEncoder())])
+        elif method == 'mixed':
+            num_transformer = Pipeline(steps=[
+                ('replace_nan', SimpleImputer(strategy='mean')),
+                ('scaler', StandardScaler(with_mean=wmean,with_std=wstd))])
+            # categorical features
+            cat_transformer = Pipeline(steps=[
+                ('replace_nan', SimpleImputer(strategy='most_frequent')),
+                ('encoder', OneHotEncoder())])
 
         # transform columns
         ct = ColumnTransformer(
