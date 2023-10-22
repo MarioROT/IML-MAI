@@ -1,6 +1,7 @@
 from algorithms.kmeans import KMeans
 from algorithms.kmodes import KModes
 from algorithms.kprototypes import KPrototypes
+from algorithms.fcm_py import FCM
 from sklearn.cluster import KMeans as SKLearnKMeans
 from sklearn.preprocessing import StandardScaler
 from evaluation.metrics import compute_accuracy
@@ -11,12 +12,26 @@ def process_kprototypes(data_path):
     X = dataset.processed_data.iloc[:, :-1]
     true_labels = dataset.processed_data['y_true'].values
 
-    # My KMeans
+    # My KPrototypes
     kprot = KPrototypes(k=3)
     kprot.fit(X)
     labels = kprot.predict(X)
     accuracy = compute_accuracy(labels, true_labels)
     print(f"My KPrototypes Accuracy: {accuracy * 100:.2f}%")
+
+
+def process_FCM(data_path):
+    dataset = Dataset(data_path)
+    X = dataset.processed_data.iloc[:, :-1].values
+    true_labels = dataset.processed_data['y_true'].values
+
+    # My FCMeans
+    fcmeans = FCM(C=3)
+    fcmeans.fit(X)
+    labels = fcmeans.predict(X)
+    accuracy = compute_accuracy(labels, true_labels)
+    print(f"My FCMeans Accuracy: {accuracy * 100:.2f}%")
+
 
 
 def process_kmeans(data_path):
@@ -65,7 +80,11 @@ if __name__ == "__main__":
     #print("Processing KMeans on waveform.arff")
     # process_kmeans('../data/raw/waveform.arff')
     # process_kmeans('../data/raw/iris.arff')
+    # process_FCM('../data/raw/waveform.arff')
+    # process_FCM('../data/raw/iris.arff')
     process_kprototypes('../data/raw/iris.arff')
 
     #print("\nProcessing KModes on dataset_24_mushroom.arff")
     # process_kmodes('../data/raw/dataset_24_mushroom.arff')
+
+
