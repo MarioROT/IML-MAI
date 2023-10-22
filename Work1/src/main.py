@@ -47,7 +47,7 @@ algorithm_params = {'kmeans':{'k':[3,5,7]},
 
 # Algoithms execution over datasets
 for dataset in args.datasets:
-    data = Dataset(f'data/raw/{dataset}.arff', method=args.dataset_method, cat_transf=args.cat_encoding)
+    data = Dataset(f'../data/raw/{dataset}.arff', method=args.dataset_method, cat_transf=args.cat_encoding)
     X = data.processed_data.iloc[:,:-1].values
     Y = data.processed_data.iloc[:,-1].values
 
