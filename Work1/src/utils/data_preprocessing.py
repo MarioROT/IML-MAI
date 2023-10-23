@@ -129,14 +129,16 @@ class Dataset():
                 ('scaler', StandardScaler(with_mean=wmean,with_std=wstd))])
             # categorical features
             cat_transformer = Pipeline(steps=[
-                ('replace_nan', SimpleImputer(strategy='most_frequent'))])
+                ('replace_nan', SimpleImputer(strategy='most_frequent')),
+                ('encoder', OrdinalEncoder())])
         elif method == 'mixed':
             num_transformer = Pipeline(steps=[
                 ('replace_nan', SimpleImputer(strategy='mean')),
                 ('scaler', StandardScaler(with_mean=wmean,with_std=wstd))])
             # categorical features
             cat_transformer = Pipeline(steps=[
-                ('replace_nan', SimpleImputer(strategy='most_frequent'))])
+                ('replace_nan', SimpleImputer(strategy='most_frequent')),
+                ('encoder', OrdinalEncoder())])
 
         # transform columns
         ct = ColumnTransformer(
@@ -154,10 +156,14 @@ class Dataset():
             columns = num_features.union(pd.Index(columns_encoder), sort=False)
         # case 2: only categorical features
         elif len(cat_features) != 0 and len(num_features) == 0:
-            columns = ct.transformers_[1][1]['encoder']. \
-                get_feature_names_out(cat_features)
-            columns = pd.Index(columns)
-            X_trans = X_trans.toarray()
+            # columns = ct.transformers_[1][1]['encoder']. \
+            #     get_feature_names_out(cat_features)
+            # columns = pd.Index(columns)
+            columns = df.columns
+            try:
+                X_trans = X_trans.toarray()
+            except:
+                pass
 
         # case 3: only numerical features
         elif len(cat_features) == 0 and len(num_features) != 0:
@@ -169,7 +175,7 @@ class Dataset():
 
         # processed dataset
         processed_df = pd.DataFrame(X_trans, columns=columns)
-        if method == 'categorical':
+        if method == 'categorical' and len(num_features) != 0:
             processed_df[processed_df.select_dtypes(exclude='object').columns] = processed_df.select_dtypes(exclude='object').apply(lambda x: pd.qcut(x,num_cat,labels=False))
             processed_df = processed_df.astype(str)
         return processed_df

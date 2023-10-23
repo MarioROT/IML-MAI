@@ -19,7 +19,7 @@ def BestParamsSearch(method, params_grid, X, y, sort_order = ['accuracy'], data=
         param_groups[f'{param_dict}'] = param_dict
 
     results = performance.process_results()
-    results.to_csv(f'../Results/Tables/results_{data[1]}_{data[0]}_{data[2]}.csv', index=False)
+    results.to_csv(f'../Results/Tables/results_{data[1]}_{data[0]}_{data[2]}_{data[3]}.csv', index=False)
     best_score = results.iloc[0,1:]
     best_params = param_groups[results.iloc[0,0]]
     return best_params, best_score

@@ -1,0 +1,5 @@
+group,accuracy,homogeneity,completeness,v_measure,adjusted_rand,adjusted_mutual_info,silhouette,davies
+{'n_clusters': 7},0.595,0.025,0.027,0.026,0.036,0.026,0.053,4.113
+{'n_clusters': 2},0.59,0.026,0.034,0.029,0.031,0.029,0.104,2.657
+{'n_clusters': 5},0.577,0.016,0.019,0.018,0.023,0.017,0.082,3.134
+{'n_clusters': 3},0.522,0.0,1.0,0.0,0.0,0.0,,
