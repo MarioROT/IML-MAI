@@ -16,17 +16,17 @@ from evaluation.metrics import performance_eval
 # Arguments parser from terminal
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-ds", "--datasets", nargs='+', help = "['iris', 'vowel', 'cmc']", default=['iris', 'cmc', 'vowel'])
+parser.add_argument("-ds", "--datasets", nargs='+', help = "['iris', 'vowel', 'waveform', 'kr-vs-kp']", default=['iris', 'waveform', 'vowel', 'kr-vs-kp'])
 parser.add_argument("-ags", "--algorithms", nargs='+', help = "['kmeans', 'kmodes', 'kprot','fcm', 'dbscan', 'birch']", default=['kmeans', 'kmodes', 'kprot','fcm', 'dbscan', 'birch'])
 parser.add_argument("-bp", "--best_params", help = "[True,False]", default=True, type=bool)
 parser.add_argument("-dsm", "--dataset_method", help = "['numeric', 'categorical', 'mixed']", default='numerical', type=str)
 parser.add_argument("-ce", "--cat_encoding", help = "['onehot', 'ordinal']", default='onehot', type=str)
-parser.add_argument("-rs", "--random_seed", help = "an integer", default=21, type=int)
+parser.add_argument("-rs", "--random_seed", help = "an integer", default=55, type=int)
 
 args = parser.parse_args()
 
 # Settings
-# np.random.seed(seed=args.random_seed)
+np.random.seed(seed=args.random_seed)
 
 algorithms = {'kmeans':KMeans,
               'kmodes':KModes,
@@ -42,10 +42,10 @@ algorithms = {'kmeans':KMeans,
 #                     'dbscan': {'eps':5, 'min_samples':20, 'metric':'euclidean'},
 #                     'birch': {'threshold': 1, 'branching_factor': 20}}
 
-algorithm_params = {'kmeans':{'k':[3,5,7]},
-                    'kmodes':{'n_clusters':[3,5,7]},
-                    'kprot':{'k':[3,5,7]},
-                    'fcm':{'C':[3,5,7]},
+algorithm_params = {'kmeans':{'k':[2,3,5,7]},
+                    'kmodes':{'n_clusters':[2,3,5,7]},
+                    'kprot':{'k':[2,3,5,7]},
+                    'fcm':{'C':[2,3,5,7]},
                     'dbscan': {'eps':5, 'min_samples':20, 'metric':'euclidean'},
                     'birch': {'threshold': 1, 'branching_factor': 20}}
 
@@ -59,7 +59,7 @@ for dataset in args.datasets:
     for agm in args.algorithms:
         if agm in ['kmeans', 'kmodes', 'kprot','fcm']:
             if args.best_params:
-                algorithm_params[agm] = BestParamsSearch(algorithms[agm], algorithm_params[agm], X, Y, ['accuracy'], f' {agm}')[0]
+                algorithm_params[agm] = BestParamsSearch(algorithms[agm], algorithm_params[agm], X, Y, ['accuracy'], [agm, dataset, args.dataset_method])[0]
                 print(f'--- Best params: {algorithm_params[agm]}')
             else:
                 algorithm = algorithms[agm](**algorithm_params[agm])

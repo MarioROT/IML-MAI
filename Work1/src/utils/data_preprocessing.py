@@ -129,8 +129,7 @@ class Dataset():
                 ('scaler', StandardScaler(with_mean=wmean,with_std=wstd))])
             # categorical features
             cat_transformer = Pipeline(steps=[
-                ('replace_nan', SimpleImputer(strategy='most_frequent')),
-                ('encoder', OneHotEncoder())])
+                ('replace_nan', SimpleImputer(strategy='most_frequent'))])
         elif method == 'mixed':
             num_transformer = Pipeline(steps=[
                 ('replace_nan', SimpleImputer(strategy='mean')),

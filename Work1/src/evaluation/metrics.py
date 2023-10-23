@@ -28,7 +28,8 @@ def performance_eval(X, predictions, true_labels, verbose = True):
                'v_measure': metrics.v_measure_score(true_labels, predictions),
                'adjusted_rand': metrics.adjusted_rand_score(true_labels, predictions),
                'adjusted_mutual_info': metrics.adjusted_mutual_info_score(true_labels, predictions),
-               'silhouette': metrics.silhouette_score(X, predictions) if len(np.unique(predictions))>1 else np.nan}
+               'silhouette': metrics.silhouette_score(X, predictions) if len(np.unique(predictions))>1 else np.nan,
+               'davies': metrics.davies_bouldin_score(X, predictions) if len(np.unique(predictions))>1 else np.nan}
 
     table.add_rows([[k,v] for k,v in results.items()])
 
@@ -53,14 +54,16 @@ class params_grid_eval:
                         'v_measure': [],
                         'adjusted_rand': [],
                         'adjusted_mutual_info': [],
-                        'silhouette': []}
+                        'silhouette': [], 
+                        'davies':[]}
         self.asc_map = {'accuracy': False,
                         'homogeneity': False,
                         'completeness': False,
                         'v_measure': True,
                         'adjusted_rand': True,
                         'adjusted_mutual_info': False,
-                        'silhouette': True}
+                        'silhouette': True,
+                        'davies': True}
         self.asc_list = [self.asc_map[m] for m in self.sort_order]
 
     def add_params_group(self, group, predictions):
@@ -85,6 +88,6 @@ class params_grid_eval:
         table.add_rows([[*v] for k,v in results_dict.items()][1:])
         if verbose:
             print(table)
-
+        
         return self.results
 
