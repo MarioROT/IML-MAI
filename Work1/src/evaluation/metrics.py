@@ -28,7 +28,7 @@ def performance_eval(X, predictions, true_labels, verbose = True):
                'v_measure': metrics.v_measure_score(true_labels, predictions),
                'adjusted_rand': metrics.adjusted_rand_score(true_labels, predictions),
                'adjusted_mutual_info': metrics.adjusted_mutual_info_score(true_labels, predictions),
-               'silhouette': metrics.silhouette_score(X, predictions)}
+               'silhouette': metrics.silhouette_score(X, predictions) if len(np.unique(predictions))>1 else np.nan}
 
     table.add_rows([[k,v] for k,v in results.items()])
 
@@ -73,8 +73,8 @@ class params_grid_eval:
         if verbose:
             print(f'---- Results for the algorithm: {self.name}')
         self.results = pd.DataFrame(self.results)
-        self.results.set_index('group')
-        self.results.sort_values(by=self.sort_order, ascending = self.asc_list)
+        # self.results.set_index('group')
+        self.results = self.results.sort_values(by=self.sort_order, ascending = self.asc_list)
         self.results = self.results.round(3)
         df_d = self.results.to_dict('split')
         results_dict = {'Group': df_d['columns']}

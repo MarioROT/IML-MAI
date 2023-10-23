@@ -5,7 +5,7 @@ from pathlib import Path
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, OrdinalEncoder
 from scipy.io import arff
 
 # from torch.utils.data import Dataset
@@ -23,7 +23,7 @@ class Dataset():
                  data_path: str,
                  with_mean: bool = True, 
                  with_std: bool = True,
-                 method: str = 'numeric',
+                 method: str = 'numerical',
                  cat_transf: str = 'onehot'):
         self.data_path = Path(data_path)
         self.wmean = with_mean
@@ -60,7 +60,7 @@ class Dataset():
         self.df = self.remove_predicted_value(self.df)
         num_samples_after_removal, num_features_after_removal = self.df.shape
         nulls = self.check_null_values(self.df)
-        self.processed_data = self.standardization(self.df, self.method, self.cat_transf, self.wmean, self.wstd)
+        self.processed_data = self.standardization(self.df, self.method, self.cat_transf, self.wmean, self.wstd, len(self.y_true.unique()))
         num_samples_final, num_features_final = self.processed_data.shape
         self.processed_data['y_true'] = self.encode_labels(self.y_true, self.classes_relation)
         print(f"Initial Dataset: {num_samples_initial} samples, {num_features_initial} features")
@@ -106,11 +106,11 @@ class Dataset():
         num_classes = [classes_relation[item] for item in labels]
         return num_classes
     @staticmethod
-    def standardization(df: pd.DataFrame, method, cat_transf, wmean=True, wstd=True):
+    def standardization(df: pd.DataFrame, method, cat_transf, wmean=True, wstd=True, num_cat=2):
         # numerical features
         num_features = df.select_dtypes(include=np.number).columns
         cat_features = df.select_dtypes(exclude=np.number).columns
-        if method == 'numeric':
+        if method == 'numerical':
             num_transformer = Pipeline(steps=[
                 ('replace_nan', SimpleImputer(strategy='mean')),
                 ('scaler', StandardScaler(with_mean=wmean,with_std=wstd))])
@@ -137,8 +137,7 @@ class Dataset():
                 ('scaler', StandardScaler(with_mean=wmean,with_std=wstd))])
             # categorical features
             cat_transformer = Pipeline(steps=[
-                ('replace_nan', SimpleImputer(strategy='most_frequent')),
-                ('encoder', OneHotEncoder())])
+                ('replace_nan', SimpleImputer(strategy='most_frequent'))])
 
         # transform columns
         ct = ColumnTransformer(
@@ -147,13 +146,13 @@ class Dataset():
                 ('cat', cat_transformer, cat_features)])
         X_trans = ct.fit_transform(df)
 
+
         # dataset cases
         # case 1: categorical and numerical features
         if len(cat_features) != 0 and len(num_features) != 0:
             columns_encoder = ct.transformers_[1][1]['encoder']. \
                 get_feature_names_out(cat_features)
             columns = num_features.union(pd.Index(columns_encoder), sort=False)
-
         # case 2: only categorical features
         elif len(cat_features) != 0 and len(num_features) == 0:
             columns = ct.transformers_[1][1]['encoder']. \
@@ -171,6 +170,9 @@ class Dataset():
 
         # processed dataset
         processed_df = pd.DataFrame(X_trans, columns=columns)
+        if method == 'categorical':
+            processed_df[processed_df.select_dtypes(exclude='object').columns] = processed_df.select_dtypes(exclude='object').apply(lambda x: pd.qcut(x,num_cat,labels=False))
+            processed_df = processed_df.astype(str)
         return processed_df
 
 if __name__ == '__main__':

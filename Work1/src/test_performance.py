@@ -4,7 +4,7 @@ from algorithms.kprototypes import KPrototypes
 from algorithms.fcm_py import FCM
 from sklearn.cluster import KMeans as SKLearnKMeans
 from sklearn.preprocessing import StandardScaler
-from evaluation.metrics import compute_accuracy
+from evaluation.metrics import compute_accuracy, map_clusters_to_labels
 from utils.data_preprocessing import Dataset
 
 def process_kprototypes(data_path):
@@ -69,8 +69,8 @@ def process_kmodes(data_path):
     kmodes = KModes(n_clusters=3, random_state=42)
     kmodes.fit(X)
     kmodes_labels = kmodes.labels_
-    kmodes_accuracy = map_clusters_to_labels(kmodes_labels, true_labels)
-    print(f"Kmodes Accuracy: {kmodes_accuracy * 100:.2f}%")
+    kpreds = map_clusters_to_labels(kmodes_labels, true_labels)
+    print(f"Kmodes Accuracy: {compute_accuracy(kpreds, true_labels) * 100:.2f}%")
 
     #print(kmodes_labels)
     #print(true_labels)
@@ -82,9 +82,7 @@ if __name__ == "__main__":
     # process_kmeans('../data/raw/iris.arff')
     # process_FCM('../data/raw/waveform.arff')
     # process_FCM('../data/raw/iris.arff')
-    process_kprototypes('../data/raw/iris.arff')
+    # process_kprototypes('../data/raw/iris.arff')
 
     #print("\nProcessing KModes on dataset_24_mushroom.arff")
-    # process_kmodes('../data/raw/dataset_24_mushroom.arff')
-
-
+    process_kmodes('../data/raw/dataset_24_mushroom.arff')

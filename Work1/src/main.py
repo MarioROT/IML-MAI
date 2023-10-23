@@ -1,5 +1,6 @@
 import argparse
 import timeit
+import numpy as np
 
 from utils.data_preprocessing import Dataset
 from utils.best_params_search import BestParamsSearch
@@ -18,12 +19,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-ds", "--datasets", nargs='+', help = "['iris', 'vowel', 'cmc']", default=['iris', 'cmc', 'vowel'])
 parser.add_argument("-ags", "--algorithms", nargs='+', help = "['kmeans', 'kmodes', 'kprot','fcm', 'dbscan', 'birch']", default=['kmeans', 'kmodes', 'kprot','fcm', 'dbscan', 'birch'])
 parser.add_argument("-bp", "--best_params", help = "[True,False]", default=True, type=bool)
-parser.add_argument("-dsm", "--dataset_method", help = "['numeric', 'categorical', 'mixed']", default='numeric', type=str)
+parser.add_argument("-dsm", "--dataset_method", help = "['numeric', 'categorical', 'mixed']", default='numerical', type=str)
 parser.add_argument("-ce", "--cat_encoding", help = "['onehot', 'ordinal']", default='onehot', type=str)
+parser.add_argument("-rs", "--random_seed", help = "an integer", default=21, type=int)
 
 args = parser.parse_args()
 
 # Settings
+# np.random.seed(seed=args.random_seed)
+
 algorithms = {'kmeans':KMeans,
               'kmodes':KModes,
               'kprot': KPrototypes,

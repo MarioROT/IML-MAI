@@ -11,10 +11,10 @@ class KModes:
 
     def fit(self, X):
         X = X.astype(np.uint)
-        np.random.seed(self.random_state)
+        # np.random.seed(self.random_state)
 
         # Insert the first K objects into K new clusters.
-        initial_clusters = X[:self.n_clusters]
+        initial_clusters = X[np.random.choice(X.shape[0], self.n_clusters, replace=False)]
 
         # Calculate the initial K modes for K clusters.
         self.cluster_centers_ = np.array([self._mode(cluster.reshape(1, -1)) for cluster in initial_clusters])
@@ -31,7 +31,7 @@ class KModes:
             previous_labels = labels
 
             # Recalculate the cluster modes
-            self.cluster_centers_ = np.array([self._mode(X[labels == i]) for i in range(self.n_clusters)])
+            self.cluster_centers_ = np.array([self._mode(X[labels == i]) for i in range(self.n_clusters) if len(X[labels == i]) > 0])
 
         self.labels_ = labels
         return self
