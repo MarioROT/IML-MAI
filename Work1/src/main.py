@@ -7,7 +7,7 @@ from algorithms.kmeans import KMeans
 from algorithms.kmodes import KModes
 from algorithms.kprototypes import KPrototypes
 from algorithms.fcm_py import FCM
-from algorithms.DBSCAN import DBSCANClustering
+from algorithms.DBSCAN_old import DBSCANClustering
 from algorithms.BIRCH import BIRCHClustering
 from evaluation.metrics import performance_eval
 
