@@ -58,5 +58,5 @@ class FCM:
                 membership_sum = np.sum((distances[i, j] / distances[i, :]) ** (2 / (self.m - 1)))
                 self.memberships[i, j] = 1 / membership_sum
 
-    def predict(self):
+    def predict(self, X):
         return np.argmax(self.memberships, axis=1)
