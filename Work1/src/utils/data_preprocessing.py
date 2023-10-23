@@ -157,7 +157,10 @@ class Dataset():
             columns = ct.transformers_[1][1]['encoder']. \
                 get_feature_names_out(cat_features)
             columns = pd.Index(columns)
-            X_trans = X_trans.toarray()
+            try:
+                X_trans = X_trans.toarray()
+            except:
+                pass
 
         # case 3: only numerical features
         elif len(cat_features) == 0 and len(num_features) != 0:

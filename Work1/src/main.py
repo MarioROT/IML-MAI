@@ -59,7 +59,7 @@ for dataset in args.datasets:
     for agm in args.algorithms:
         if agm in ['kmeans', 'kmodes', 'kprot','fcm']:
             if args.best_params:
-                algorithm_params[agm] = BestParamsSearch(algorithms[agm], algorithm_params[agm], X, Y, ['accuracy'], [agm, dataset, args.dataset_method])[0]
+                algorithm_params[agm] = BestParamsSearch(algorithms[agm], algorithm_params[agm], X, Y, ['accuracy'], [agm, dataset, args.dataset_method, args.random_seed])[0]
                 print(f'--- Best params: {algorithm_params[agm]}')
             else:
                 algorithm = algorithms[agm](**algorithm_params[agm])
