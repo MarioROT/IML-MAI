@@ -12,7 +12,7 @@ class BIRCHClustering:
         print("---Running BIRCH Clustering---")
         self.X = X
         self.y_true = y
-        self.threshold_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+        self.threshold_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
         self.branching_factor_values = [10, 20, 30, 40, 50]
         self.best_params = {
             'homogeneity': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
@@ -58,7 +58,7 @@ class BIRCHClustering:
 
 if __name__ == "__main__":
     # Load Dataset:
-    data_path = '../../data/raw/waveform.arff'  # Change the path to your ARFF file
+    data_path = '../../data/raw/vowel.arff'  # Change the path to your ARFF file
     dataset = Dataset(data_path)
     X = dataset.processed_data.drop(columns=['y_true']).values  # Use processed_data from the Dataset object
     y = dataset.y_true

@@ -58,6 +58,10 @@ class Dataset():
         self.y_true = self.get_predicted_value(self.df)
         self.classes_relation = {k: v for v, k in enumerate(set(self.y_true))}
         self.df = self.remove_predicted_value(self.df)
+        #If dataset vowels
+        if "Train_or_Test" in self.df.columns:
+            self.df = self.df.drop(columns=["Train_or_Test"])
+
         num_samples_after_removal, num_features_after_removal = self.df.shape
         nulls = self.check_null_values(self.df)
         self.processed_data = self.standardization(self.df, self.method, self.cat_transf, self.wmean, self.wstd, len(self.y_true.unique()))
