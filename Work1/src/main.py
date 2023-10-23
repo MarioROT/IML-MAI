@@ -8,7 +8,7 @@ from algorithms.kmeans import KMeans
 from algorithms.kmodes import KModes
 from algorithms.kprototypes import KPrototypes
 from algorithms.fcm_py import FCM
-from algorithms.DBSCAN_old import DBSCANClustering
+from algorithms.DBSCAN import DBSCANClustering
 from algorithms.BIRCH import BIRCHClustering
 from sklearn.cluster import DBSCAN, Birch
 from evaluation.metrics import performance_eval
@@ -49,7 +49,7 @@ algorithm_params = {'kmeans':{'k':[3,7,9,11,13,15]},
                     'dbscan': {'eps':5, 'min_samples':20, 'metric':'euclidean'},
                     'birch': {'threshold': 1, 'branching_factor': 20}}
 
-# Algoithms execution over datasets
+# Algorithms execution over datasets
 for dataset in args.datasets:
     data = Dataset(f'../data/raw/{dataset}.arff', method=args.dataset_method, cat_transf=args.cat_encoding)
     X = data.processed_data.iloc[:,:-1].values

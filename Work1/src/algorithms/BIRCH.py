@@ -1,5 +1,4 @@
 from itertools import product
-
 from sklearn import metrics
 from sklearn.cluster import Birch
 import sys

@@ -1,10 +1,5 @@
-
-import os
 import sys
-import pandas as pd
-from matplotlib import pyplot as plt
 from sklearn.preprocessing import StandardScaler
-
 sys.path.append('../')
 from sklearn import metrics
 from sklearn.cluster import DBSCAN
