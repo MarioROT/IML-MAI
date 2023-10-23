@@ -11,7 +11,6 @@ class KModes:
 
     def fit(self, X):
         X = X.astype(np.uint)
-        # np.random.seed(self.random_state)
 
         # Insert the first K objects into K new clusters.
         initial_clusters = X[np.random.choice(X.shape[0], self.n_clusters, replace=False)]

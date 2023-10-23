@@ -151,9 +151,10 @@ class Dataset():
         # dataset cases
         # case 1: categorical and numerical features
         if len(cat_features) != 0 and len(num_features) != 0:
-            columns_encoder = ct.transformers_[1][1]['encoder']. \
-                get_feature_names_out(cat_features)
-            columns = num_features.union(pd.Index(columns_encoder), sort=False)
+            # columns_encoder = ct.transformers_[1][1]['encoder']. \
+            #     get_feature_names_out(cat_features)
+            # columns = num_features.union(pd.Index(columns_encoder), sort=False)
+            columns = df.columns
         # case 2: only categorical features
         elif len(cat_features) != 0 and len(num_features) == 0:
             # columns = ct.transformers_[1][1]['encoder']. \
@@ -176,8 +177,11 @@ class Dataset():
         # processed dataset
         processed_df = pd.DataFrame(X_trans, columns=columns)
         if method == 'categorical' and len(num_features) != 0:
-            processed_df[processed_df.select_dtypes(exclude='object').columns] = processed_df.select_dtypes(exclude='object').apply(lambda x: pd.qcut(x,num_cat,labels=False))
-            processed_df = processed_df.astype(str)
+            try:
+                processed_df[processed_df.select_dtypes(exclude='object').columns] = processed_df.select_dtypes(exclude='object').apply(lambda x: pd.qcut(x,num_cat,labels=False))
+                processed_df = processed_df.astype(str)
+            except:
+                pass
         return processed_df
 
 if __name__ == '__main__':

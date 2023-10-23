@@ -42,9 +42,9 @@ algorithms = {'kmeans':KMeans,
 #                     'dbscan': {'eps':5, 'min_samples':20, 'metric':'euclidean'},
 #                     'birch': {'threshold': 1, 'branching_factor': 20}}
 
-algorithm_params = {'kmeans':{'k':[2,3,5,7]},
-                    'kmodes':{'n_clusters':[2,3,5,7]},
-                    'kprot':{'k':[2,3,5,7]},
+algorithm_params = {'kmeans':{'k':[3,7,9,11,13,15]},
+                    'kmodes':{'n_clusters':[3,7,9,11,13,15]},
+                    'kprot':{'k':[3,7,9,11,13,15]},
                     'fcm':{'C':[2,3,5,7]},
                     'dbscan': {'eps':5, 'min_samples':20, 'metric':'euclidean'},
                     'birch': {'threshold': 1, 'branching_factor': 20}}
