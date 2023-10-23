@@ -94,7 +94,7 @@ deactivate
 source venv/bin/activate
 ```
 
-2. Running the main script: main.py
+2. Running the main script: main.py - Be sure to run the file from `src` directory
 Arguments to choose:
 ```bash
 - '-ds' or '--datasets': Specify the datasets you want to perform clustering on. Available options: 'iris', 'vowel', 'waveform', 'kr-vs-kp'.
