@@ -44,7 +44,7 @@ class KPrototypes:
             num_distances = np.linalg.norm(num_feats[:, np.newaxis,] - num_cents, axis=2)
             distances_to_centroids = np.zeros(num_distances.shape)
         if cat_feats.size != 0:
-           cat_cents = self.centroids.select_dtypes(exclude = num_cents.dtype)
+           cat_cents = self.centroids.select_dtypes(exclude = 'number').values
            cat_distances = np.sum(np.not_equal(cat_feats[:, np.newaxis],cat_cents).astype(np.uint), axis=2)
            distances_to_centroids = np.zeros(cat_distances.shape)
         if num_feats.size != 0 and cat_feats.size != 0:
