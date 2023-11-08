@@ -12,7 +12,7 @@ import pandas as pd
 from numpy.linalg import eig
 
 
-class PCA:
+class CustomPCA:
     def __init__(self, X, k=None, threshold=85):
         print("----Performing PCA----")
         self.X = X
@@ -71,7 +71,7 @@ class PCA:
         self.X_transformed = self.X.dot(W.T)
         print("Original data shape: ", self.X.shape)
         print(f"Transformed data shape: {self.X_transformed.shape} captures {cum_explained_variance[self.X_transformed.shape[1]-1]}% of total "
-              f"variation")
+              f"variation (Own PCA)")
 
         """
         # Plot

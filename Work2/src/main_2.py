@@ -11,7 +11,7 @@ sys.path.append('../')
 
 from utils.data_preprocessing import Dataset
 from algorithms.BIRCH import BIRCHClustering
-from algorithms.PCA import PCA
+from algorithms.PCA import CustomPCA
 from algorithms.TruncatedSVD import find_best_n_components
 
 DATASET = "waveform"
@@ -48,7 +48,7 @@ Run K-means
 """
 Perform reduction of dimensionality using PCA
 """
-pca = PCA(X_original, threshold=THRESHOLD)
+pca = CustomPCA(X_original, threshold=THRESHOLD)
 pca.fit()
 X_PCA = pca.X_transformed  # Transformed data after PCA
 

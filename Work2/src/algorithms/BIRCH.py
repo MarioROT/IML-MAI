@@ -6,7 +6,7 @@ from sklearn.cluster import Birch
 import sys
 
 from sklearn.preprocessing import StandardScaler
-from algorithms.PCA import PCA
+
 sys.path.append('../')
 from utils.data_preprocessing import Dataset
 
@@ -92,11 +92,7 @@ if __name__ == "__main__":
     X = dataset.processed_data.drop(columns=['y_true']).values  # Use processed_data from the Dataset object
     y = dataset.y_true
 
-    # Apply PCA
-    pca = PCA(X)  # You can pass the number of components (k) as a parameter if you want to specify a different value
-    pca.fit()
-    X_transformed = pca.X_transformed  # Transformed data after PCA
 
-    BIRCHClustering = BIRCHClustering(X_transformed, y)
+    BIRCHClustering = BIRCHClustering(X, y)
     BIRCHClustering.search_best_params()
     BIRCHClustering.print_best_params()
