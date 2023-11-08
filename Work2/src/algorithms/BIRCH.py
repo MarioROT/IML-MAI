@@ -1,9 +1,16 @@
 from itertools import product
+
+import pandas as pd
 from sklearn import metrics
 from sklearn.cluster import Birch
 import sys
+
+from sklearn.preprocessing import StandardScaler
+from algorithms.PCA import PCA
 sys.path.append('../')
 from utils.data_preprocessing import Dataset
+
+from prettytable import PrettyTable
 
 
 class BIRCHClustering:
@@ -14,22 +21,30 @@ class BIRCHClustering:
         self.threshold_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
         self.branching_factor_values = [10, 20, 30, 40, 50]
         self.best_params = {
-            'homogeneity': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
-            'completeness': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
-            'v_measure': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
-            'adjusted_rand': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
-            'adjusted_mutual_info': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
-            'silhouette': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None}
+            'Homogeneity': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
+            'Completeness': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
+            'V_measure': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
+            'Adjusted_rand': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
+            'Adjusted_mutual_info': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
+            'Silhouette': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None}
+        }
+        self.results_dict = {
+            'Homogeneity': {},
+            'Completeness': {},
+            'V_measure': {},
+            'Adjusted_rand': {},
+            'Adjusted_mutual_info': {},
+            'Silhouette': {}
         }
 
     def _calculate_metrics(self, labels):
         metrics_scores = {
-            'homogeneity': metrics.homogeneity_score(self.y_true, labels),
-            'completeness': metrics.completeness_score(self.y_true, labels),
-            'v_measure': metrics.v_measure_score(self.y_true, labels),
-            'adjusted_rand': metrics.adjusted_rand_score(self.y_true, labels),
-            'adjusted_mutual_info': metrics.adjusted_mutual_info_score(self.y_true, labels),
-            'silhouette': metrics.silhouette_score(self.X, labels)
+            'Homogeneity': metrics.homogeneity_score(self.y_true, labels),
+            'Completeness': metrics.completeness_score(self.y_true, labels),
+            'V_measure': metrics.v_measure_score(self.y_true, labels),
+            'Adjusted_rand': metrics.adjusted_rand_score(self.y_true, labels),
+            'Adjusted_mutual_info': metrics.adjusted_mutual_info_score(self.y_true, labels),
+            'Silhouette': metrics.silhouette_score(self.X, labels)
         }
         return metrics_scores
 
@@ -49,19 +64,39 @@ class BIRCHClustering:
 
     def print_best_params(self):
         for metric_name, params in self.best_params.items():
-            print(f"Best Parameters for {metric_name.capitalize()}:")
-            print(f"Threshold: {params['threshold']}, Branching Factor: {params['branching_factor']}")
-            print(f"Best {metric_name.capitalize()} Score: {params['score']:.3f}")
-            print(f"Number of Clusters: {params['num_clusters']}")
-            print("------")
+            threshold = params['threshold']
+            branching_factor = params['branching_factor']
+            num_clusters = params['num_clusters']
+            score = params['score']
+
+            self.results_dict[metric_name] = {
+                'Threshold': threshold,
+                'Branching Factor': branching_factor,
+                'Number of Clusters': num_clusters,
+                'Score': round(score, 3)
+            }
+
+            """print(f"Best Parameters for {metric_name.capitalize()}:")
+            print(f"Threshold: {threshold}, Branching Factor: {branching_factor}")
+            print(f"Number of Clusters: {num_clusters}")
+            print(f"Score: {score:.3f}")
+            print("------")"""
+
+        print(pd.DataFrame(self.results_dict))
+
 
 if __name__ == "__main__":
     # Load Dataset:
-    data_path = '../../data/raw/vowel.arff'  # Change the path to your ARFF file
-    dataset = Dataset(data_path)
+    data_path = '../../data/raw/iris.arff'  # Change the path to your ARFF file
+    dataset = Dataset(data_path, method="numerical")
     X = dataset.processed_data.drop(columns=['y_true']).values  # Use processed_data from the Dataset object
     y = dataset.y_true
 
-    BIRCHClustering = BIRCHClustering(X, y)
+    # Apply PCA
+    pca = PCA(X)  # You can pass the number of components (k) as a parameter if you want to specify a different value
+    pca.fit()
+    X_transformed = pca.X_transformed  # Transformed data after PCA
+
+    BIRCHClustering = BIRCHClustering(X_transformed, y)
     BIRCHClustering.search_best_params()
     BIRCHClustering.print_best_params()

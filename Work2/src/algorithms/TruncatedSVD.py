@@ -5,7 +5,7 @@ import sys
 sys.path.append('../')
 from utils.data_preprocessing import Dataset
 
-def find_best_n_components(X, threshold=0.85):
+def find_best_n_components(X, threshold=85):
     explained_variances = []
     n_features = X.shape[1]
     n_components_range = range(1, n_features + 1)
@@ -14,9 +14,9 @@ def find_best_n_components(X, threshold=0.85):
     for n_components in n_components_range:
         svd = TruncatedSVD(n_components=n_components)
         X_transformed = svd.fit_transform(X)
-        explained_variances.append(np.sum(svd.explained_variance_ratio_))
+        explained_variances.append(np.sum(svd.explained_variance_ratio_) *100)
 
-        if np.sum(svd.explained_variance_ratio_) >= threshold:
+        if np.sum(svd.explained_variance_ratio_)*100 >= threshold:
             best_n_components = n_components
             break
 
@@ -42,9 +42,9 @@ if __name__ == "__main__":
     y = dataset.y_true
 
     # Find the best number of components
-    best_n_components, explained_variances = find_best_n_components(X, threshold=0.85)
+    best_n_components, explained_variances = find_best_n_components(X, threshold=85)
 
-    print("Number of Components:", best_n_components)
+    print(f"Number of Components:{best_n_components}. Captures {explained_variances[best_n_components-1]:0.2f}% of total variation")
 
     # Plot explained variance ratio
     plot_explained_variance(explained_variances)

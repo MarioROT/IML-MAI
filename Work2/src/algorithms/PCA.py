@@ -13,11 +13,12 @@ from numpy.linalg import eig
 
 
 class PCA:
-    def __init__(self, X, k=None):
+    def __init__(self, X, k=None, threshold=85):
         print("----Performing PCA----")
         self.X = X
         self.k = k
-        self.threshold_exp_var = 85 #85%
+        self.threshold_exp_var = threshold #85%
+        self.X_transformed = None
 
     def fit(self):
         # Compute the mean centered vector of the data
@@ -48,26 +49,28 @@ class PCA:
 
         # Choose principal components
         eig_vals_total = sum(eig_vals)
-        explained_variance = [(i / eig_vals_total) * 100 for i in eig_vals_sorted]
+        explained_variance = [(i / eig_vals_total) *100 for i in eig_vals_sorted]
         explained_variance = np.round(explained_variance, 2)
         cum_explained_variance = np.cumsum(explained_variance)
 
         # Plot
+        n_samples, n_features = self.X.shape
         plt.plot(np.arange(1, n_features + 1), cum_explained_variance, '-o')
         plt.xticks(np.arange(1, n_features + 1))
         plt.xlabel('Number of components')
         plt.ylabel('Cumulative explained variance')
+        plt.title('PCA: Explained Variance Ratio vs. Number of Components')
         plt.show()
 
-        # Determine k based on cumulative explained variance
+        # Determine k based on cumulative explained variance. Higher than 'threshold_exp_var'
         if self.k is None:
             self.k = np.argmax(cum_explained_variance >= self.threshold_exp_var) + 1
         W = eig_vecs_sorted[:self.k, :]
 
         # Project data
-        X_proj = self.X.dot(W.T)
+        self.X_transformed = self.X.dot(W.T)
         print("Original data shape: ", self.X.shape)
-        print(f"Transformed data shape: {X_proj.shape} captures {cum_explained_variance[X_proj.shape[1]-1]} of total "
+        print(f"Transformed data shape: {self.X_transformed.shape} captures {cum_explained_variance[self.X_transformed.shape[1]-1]}% of total "
               f"variation")
 
         """
@@ -115,6 +118,6 @@ if __name__ == "__main__":
 
     X_std = StandardScaler().fit_transform(X)
 
-    pca = PCA(X_std)
+    pca = PCA(X_std, threshold=85)
     pca.fit()
 
