@@ -22,12 +22,12 @@ class CustomPCA:
         self.cum_explained_variance = 0
 
     def fit(self):
-        print("Original dataset: ", self.X)
+        #print("Original dataset: ", self.X)
         # Compute the mean centered vector of the data
         mean_centered_vector = (self.X - np.mean(self.X, axis=0))
         # Calculate covariance matrix
         cov_matrix = np.cov(mean_centered_vector, rowvar=False)
-        print("Covariance matrix:", cov_matrix)
+        #print("Covariance matrix:", cov_matrix)
 
         # Eigenvalues and eigenvectors
         eig_vals, eig_vecs = eig(cov_matrix)
@@ -38,8 +38,8 @@ class CustomPCA:
         eig_vecs = eig_vecs * signs[np.newaxis, :]
         eig_vecs = eig_vecs.T
 
-        print('Eigenvalues \n', eig_vals)
-        print('Eigenvectors \n', eig_vecs)
+        #print('Eigenvalues \n', eig_vals)
+        #print('Eigenvectors \n', eig_vecs)
 
         # Rearrange the eigenvectors and eigenvalues
         eig_pairs = [(np.abs(eig_vals[i]), eig_vecs[i, :]) for i in range(len(eig_vals))]
@@ -47,7 +47,7 @@ class CustomPCA:
         eig_vals_sorted = np.array([x[0] for x in eig_pairs])
         eig_vecs_sorted = np.array([x[1] for x in eig_pairs])
 
-        print("Eigenvector Matrix (sorted by eigenvalues):", eig_pairs)
+        #print("Eigenvector Matrix (sorted by eigenvalues):", eig_pairs)
 
         # Choose principal components
         eig_vals_total = sum(eig_vals)
@@ -62,11 +62,11 @@ class CustomPCA:
 
         # Project data
         self.X_transformed = self.X.dot(W.T)
-        print("Original data shape: ", self.X.shape)
-        print("Transformed dataset: ", self.X_transformed)
-        print(
-            f"Transformed data shape: {self.X_transformed.shape} captures {self.cum_explained_variance[self.X_transformed.shape[1] - 1]:0.2f}% of total "
-            f"variation (own PCA)")
+        #print("Original data shape: ", self.X.shape)
+        #print("Transformed dataset: ", self.X_transformed)
+        #print(
+            #f"Transformed data shape: {self.X_transformed.shape} captures {self.cum_explained_variance[self.X_transformed.shape[1] - 1]:0.2f}% of total "
+            #f"variation (own PCA)")
 
     def plot_components(self, dataset_name):
         plt.figure(figsize=(12, 8))

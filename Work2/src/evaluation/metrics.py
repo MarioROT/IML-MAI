@@ -4,16 +4,23 @@ from sklearn import metrics
 from prettytable import PrettyTable
 
 
+import pandas as pd
+
 def map_clusters_to_labels(labels, true_labels):
     """Map clusters to most common true labels."""
     cluster_to_label_mapping = {}
     for cluster in np.unique(labels):
+        # Extract the true labels of the data points in the current cluster
         true_classes_in_cluster = true_labels[labels == cluster]
-        most_common = np.bincount(true_classes_in_cluster).argmax()
-        cluster_to_label_mapping[cluster] = most_common
 
-    predicted_classes = np.array([cluster_to_label_mapping[cluster] for cluster in labels])
-    return predicted_classes
+        # Find the most common label
+        most_common_label = pd.Series(true_classes_in_cluster).mode()[0]
+        cluster_to_label_mapping[cluster] = most_common_label
+
+    # Map each data point to the most common label of its cluster
+    mapped_labels = np.array([cluster_to_label_mapping[cluster] for cluster in labels])
+    return mapped_labels
+
 
 compute_accuracy = lambda predictions, true_labels: np.mean(predictions == true_labels)
 

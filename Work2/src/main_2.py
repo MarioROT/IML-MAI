@@ -12,6 +12,9 @@ from utils.data_preprocessing import Dataset
 from algorithms.BIRCH import BIRCHClustering
 from algorithms.PCA import CustomPCA
 from algorithms.TruncatedSVD import find_best_n_components
+from algorithms.kmeans import KMeans
+from evaluation.metrics import performance_eval
+
 
 def run_clustering(X, y, method, threshold):
     """
@@ -26,9 +29,21 @@ def run_clustering(X, y, method, threshold):
     Returns:
     - None
     """
-    clustering = BIRCHClustering(X, y)
-    clustering.search_best_params()
-    clustering.print_best_params()
+    if method == 'BIRCH':
+        clustering = BIRCHClustering(X, y)
+        clustering.search_best_params()
+        clustering.print_best_params()
+    elif method == 'KMeans':
+        # Run K-means clustering
+        kmeans = KMeans(k=3)
+        kmeans.fit(X)
+        labels = kmeans.labels_
+
+        # Evaluate performance
+        print(f"K-means clustering ({method}):")
+        performance_eval(X, labels, y)
+    else:
+        raise ValueError("Invalid clustering method.")
 
     # Add K-means implementation for method 'KMeans' if needed
     # ...
@@ -86,6 +101,8 @@ if __name__ == "__main__":
     print("----------Running clustering without using dimensionality reduction----------")
     run_clustering(X_original, y_original, method='BIRCH', threshold=THRESHOLD)
     # TODO: Add K-means clustering without dimensionality reduction if needed
+    print("----------Running Kmeans without using dimensionality reduction-----")
+    run_clustering(X_original, y_original, method='KMeans', threshold=THRESHOLD)
 
     ##################################################################################################################
     ##################################################################################################################
@@ -93,6 +110,8 @@ if __name__ == "__main__":
     X_PCA = run_dimensionality_reduction(X_original, method='PCA', threshold=THRESHOLD)
     run_clustering(X_PCA, y_original, method='BIRCH', threshold=THRESHOLD)
     # TODO: Add K-means clustering using PCA if needed
+    print("----------Running KMeans clustering using PCA----------")
+    run_clustering(X_PCA, y_original, method='KMeans', threshold=THRESHOLD)
 
     ##################################################################################################################
     ##################################################################################################################
@@ -100,3 +119,5 @@ if __name__ == "__main__":
     X_SVD = run_dimensionality_reduction(X_original, method='TruncatedSVD', threshold=THRESHOLD)
     run_clustering(X_SVD, y_original, method='BIRCH', threshold=THRESHOLD)
     # TODO: Add K-means clustering using TruncatedSVD if needed
+    print("----------Running KMeans clustering using SVD----------")
+    run_clustering(X_SVD, y_original, method='KMeans', threshold=THRESHOLD)
