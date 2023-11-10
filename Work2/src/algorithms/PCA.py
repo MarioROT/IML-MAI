@@ -17,10 +17,12 @@ class CustomPCA:
         print("----Performing PCA----")
         self.X = X
         self.k = k
-        self.threshold_exp_var = threshold #85%
+        self.threshold_exp_var = threshold  # 85%
         self.X_transformed = None
+        self.cum_explained_variance = 0
 
     def fit(self):
+        print("Original dataset: ", self.X)
         # Compute the mean centered vector of the data
         mean_centered_vector = (self.X - np.mean(self.X, axis=0))
         # Calculate covariance matrix
@@ -49,41 +51,41 @@ class CustomPCA:
 
         # Choose principal components
         eig_vals_total = sum(eig_vals)
-        explained_variance = [(i / eig_vals_total) *100 for i in eig_vals_sorted]
+        explained_variance = [(i / eig_vals_total) * 100 for i in eig_vals_sorted]
         explained_variance = np.round(explained_variance, 2)
-        cum_explained_variance = np.cumsum(explained_variance)
-
-        # Plot
-        n_samples, n_features = self.X.shape
-        plt.plot(np.arange(1, n_features + 1), cum_explained_variance, '-o')
-        plt.xticks(np.arange(1, n_features + 1))
-        plt.xlabel('Number of components')
-        plt.ylabel('Cumulative explained variance')
-        plt.title('PCA: Explained Variance Ratio vs. Number of Components')
-        plt.show()
+        self.cum_explained_variance = np.cumsum(explained_variance)
 
         # Determine k based on cumulative explained variance. Higher than 'threshold_exp_var'
         if self.k is None:
-            self.k = np.argmax(cum_explained_variance >= self.threshold_exp_var) + 1
+            self.k = np.argmax(self.cum_explained_variance >= self.threshold_exp_var) + 1
         W = eig_vecs_sorted[:self.k, :]
 
         # Project data
         self.X_transformed = self.X.dot(W.T)
         print("Original data shape: ", self.X.shape)
-        print(f"Transformed data shape: {self.X_transformed.shape} captures {cum_explained_variance[self.X_transformed.shape[1]-1]}% of total "
-              f"variation (Own PCA)")
+        print("Transformed dataset: ", self.X_transformed)
+        print(
+            f"Transformed data shape: {self.X_transformed.shape} captures {self.cum_explained_variance[self.X_transformed.shape[1] - 1]:0.2f}% of total "
+            f"variation (own PCA)")
 
-        """
-        # Plot
-        plt.scatter(X_proj[:, 0], X_proj[:, 1])
+    def plot_components(self, dataset_name):
+        plt.figure(figsize=(12, 8))
+        n_samples, n_features = self.X.shape
+        plt.plot(np.arange(1, n_features + 1), self.cum_explained_variance, '-o')
+        plt.xticks(np.arange(1, n_features + 1))
+        plt.xlabel('Number of components')
+        plt.ylabel('Cumulative explained variance')
+        plt.title('PCA: Explained Variance Ratio vs. Number of Components')
+        plt.savefig(f'../Results/images/{dataset_name}_PCAcomponents.png')
+
+    def plot_2D(self, dataset_name, y):
+        plt.figure(figsize=(10, 8))
+        plt.scatter(self.X_transformed[:, 0], self.X_transformed[:, 1], c=y, cmap='viridis')
         plt.xlabel('PC1')
-        plt.xticks([])
         plt.ylabel('PC2')
-        plt.yticks([])
-        plt.title('2 components, captures {} of total variation'.format(cum_explained_variance[1]))
-        plt.show()
+        plt.title(f'2 components')
+        plt.savefig(f'../Results/images/{dataset_name}_PCA2D.png')
 
-        plt.close()"""
 
 
 if __name__ == "__main__":
@@ -106,11 +108,6 @@ if __name__ == "__main__":
     print('Number of samples:', n_samples)
     print('Number of features:', n_features)
 
-    """sns.set(style="ticks")
-    sns.pairplot(X_original, corner=True)
-    plt.show()"""
-
-
     # Preprocessing data
     dataset = Dataset(data_path, method="categorical")
     X = dataset.processed_data.drop(columns=['y_true']).values
@@ -118,6 +115,5 @@ if __name__ == "__main__":
 
     X_std = StandardScaler().fit_transform(X)
 
-    pca = PCA(X_std, threshold=85)
+    pca = CustomPCA(X_std, k=2, threshold=85)
     pca.fit()
-

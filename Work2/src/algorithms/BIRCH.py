@@ -92,7 +92,6 @@ if __name__ == "__main__":
     X = dataset.processed_data.drop(columns=['y_true']).values  # Use processed_data from the Dataset object
     y = dataset.y_true
 
-
     BIRCHClustering = BIRCHClustering(X, y)
     BIRCHClustering.search_best_params()
     BIRCHClustering.print_best_params()

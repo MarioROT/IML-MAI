@@ -44,7 +44,7 @@ if __name__ == "__main__":
     # Find the best number of components
     best_n_components, explained_variances = find_best_n_components(X, threshold=85)
 
-    print(f"Number of Components:{best_n_components}. Captures {explained_variances[best_n_components-1]:0.2f}% of total variation")
+    print(f"Number of Components: {best_n_components}. Captures {explained_variances[best_n_components-1]:0.2f}% of total variation")
 
     # Plot explained variance ratio
     plot_explained_variance(explained_variances)
