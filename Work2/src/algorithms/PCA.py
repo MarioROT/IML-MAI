@@ -85,35 +85,3 @@ class CustomPCA:
         plt.ylabel('PC2')
         plt.title(f'2 components')
         plt.savefig(f'../Results/images/{dataset_name}_PCA2D.png')
-
-
-
-if __name__ == "__main__":
-    DATASET = "kr-vs-kp"
-    data_path = f"../../data/raw/{DATASET}.arff"
-
-    # Load ARFF dataset and metadata
-    data, meta = arff.loadarff(data_path)
-
-    # Plot original data
-    df = pd.DataFrame(data)
-    print(df)
-
-    X_original = df.drop(columns=["class"])
-    y_true = df["class"]
-    features = meta.names()
-
-    n_samples, n_features = X_original.shape
-
-    print('Number of samples:', n_samples)
-    print('Number of features:', n_features)
-
-    # Preprocessing data
-    dataset = Dataset(data_path, method="categorical")
-    X = dataset.processed_data.drop(columns=['y_true']).values
-    y = dataset.y_true
-
-    X_std = StandardScaler().fit_transform(X)
-
-    pca = CustomPCA(X_std, k=2, threshold=85)
-    pca.fit()

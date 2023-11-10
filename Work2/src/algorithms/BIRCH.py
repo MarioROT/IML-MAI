@@ -1,16 +1,11 @@
 from itertools import product
-
 import pandas as pd
 from sklearn import metrics
 from sklearn.cluster import Birch
 import sys
 
-from sklearn.preprocessing import StandardScaler
-
 sys.path.append('../')
 from utils.data_preprocessing import Dataset
-
-from prettytable import PrettyTable
 
 
 class BIRCHClustering:
@@ -75,12 +70,6 @@ class BIRCHClustering:
                 'Number of Clusters': num_clusters,
                 'Score': round(score, 3)
             }
-
-            """print(f"Best Parameters for {metric_name.capitalize()}:")
-            print(f"Threshold: {threshold}, Branching Factor: {branching_factor}")
-            print(f"Number of Clusters: {num_clusters}")
-            print(f"Score: {score:.3f}")
-            print("------")"""
 
         print(pd.DataFrame(self.results_dict))
 

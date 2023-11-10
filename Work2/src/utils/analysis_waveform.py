@@ -1,14 +1,16 @@
 import sys
 import pandas as pd
+from matplotlib.cm import ScalarMappable
 from scipy.io import arff
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 # DATASET WAVEFORM
 DATASET = "waveform"
+data_path = f"../../data/raw/{DATASET}.arff"
 
 # Load ARFF dataset and metadata
-data, meta = arff.loadarff(f"datasets/{DATASET}.arff")
+data, meta = arff.loadarff(data_path)
 
 # Convert data to Pandas DataFrame
 df = pd.DataFrame(data)
@@ -17,25 +19,12 @@ df = pd.DataFrame(data)
 y_true = df["class"]
 X = df.drop(columns="class")
 
-# Number of unique classes
 num_classes = y_true.nunique()
-
-# Attribute names
 attribute_names = meta.names()
-
-# Number of samples and features
 num_samples, num_features = X.shape
-
-# Summary Statistics
 statistics = X.describe()
-
-# Class counts
 class_counts = y_true.value_counts()
-
-# Correlation Matrix
 correlation_matrix = X.corr()
-
-# Frequency of Features
 feature_frequencies = X.nunique()
 
 # Print Results
@@ -53,22 +42,43 @@ plt.title('Frequency of Classes')
 plt.xlabel('Class')
 plt.ylabel('Frequency')
 plt.xticks(rotation=0)
-plt.savefig(f'images/{DATASET}_classes.png')
+plt.savefig(f'../../Results/images/{DATASET}_classes.png')
 plt.close()
 
 # Plot Correlation Matrix
 plt.figure(figsize=(10, 8))
 sns.heatmap(correlation_matrix, annot=False, cmap='coolwarm', fmt=".2f")
 plt.title('Correlation Matrix')
-plt.savefig(f'images/{DATASET}_cm.png')
+plt.savefig(f'../../Results/images/{DATASET}_cm.png')
 plt.close()
 
-# Reduce features for pairplot
-X_reduced = X.iloc[:, :20]
-X_reduced["class"] = y_true
+# Find pair of features with the highest positive correlation
+highest_positive_corr = correlation_matrix[correlation_matrix != 1.0].stack().idxmax()
+feature1_pos, feature2_pos = highest_positive_corr
+correlation_value_pos = correlation_matrix.loc[feature1_pos, feature2_pos]
 
-# Pairplot for Reduced Data
-sns.set(style="ticks")
-sns.pairplot(X_reduced, hue=X_reduced.columns[-1], markers='.', palette='Set1', plot_kws={'alpha': 0.3})
-plt.savefig(f'images/{DATASET}_pairplot.png')
-plt.close()
+# Find pair of features with the highest negative correlation
+highest_negative_corr = correlation_matrix[correlation_matrix != -1.0].stack().idxmin()
+feature1_neg, feature2_neg = highest_negative_corr
+correlation_value_neg = correlation_matrix.loc[feature1_neg, feature2_neg]
+
+print(f"Highest positive correlation: {feature1_pos} and {feature2_pos}, Correlation = {correlation_value_pos:0.3f}")
+print(f"Highest negative correlation: {feature1_neg} and {feature2_neg}, Correlation = {correlation_value_neg:0.3f}")
+
+# Create subplots with 1 row and 2 columns
+fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+
+# Plot the scatter plot for highest positive correlation
+scatter_pos = axes[0].scatter(X[feature1_pos], X[feature2_pos], c=y_true, marker='.', cmap='viridis')
+axes[0].set_xlabel(feature1_pos)
+axes[0].set_ylabel(feature2_pos)
+axes[0].set_title(f'Scatter Plot: {feature1_pos} vs {feature2_pos}')
+
+# Plot the scatter plot for highest negative correlation
+scatter_neg = axes[1].scatter(X[feature1_neg], X[feature2_neg], c=y_true, marker='.')
+axes[1].set_xlabel(feature1_neg)
+axes[1].set_ylabel(feature2_neg)
+axes[1].set_title(f'Scatter Plot: {feature1_neg} vs {feature2_neg}')
+
+plt.tight_layout()
+plt.savefig(f'../../Results/images/{DATASET}_scatter_plots.png')

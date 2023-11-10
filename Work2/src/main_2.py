@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 from scipy.io import arff
 import sys
-
 from sklearn.decomposition import TruncatedSVD
 
 sys.path.append('../')
@@ -14,77 +13,90 @@ from algorithms.BIRCH import BIRCHClustering
 from algorithms.PCA import CustomPCA
 from algorithms.TruncatedSVD import find_best_n_components
 
-DATASET = "waveform"
-data_path = f"../data/raw/{DATASET}.arff"
+def run_clustering(X, y, method, threshold):
+    """
+    Run Birch and K-means clustering on the provided data.
 
-# Load ARFF dataset and metadata
-data, meta = arff.loadarff(data_path)
+    Parameters:
+    - X: Features matrix
+    - y: Target variable
+    - method: Clustering method ('BIRCH' or 'KMeans')
+    - threshold: Threshold for dimensionality reduction
 
-# Preprocessing data
-dataset = Dataset(data_path, method="numerical")
-X_original = dataset.processed_data.drop(columns=['y_true']).values
-y_original = dataset.y_true
+    Returns:
+    - None
+    """
+    clustering = BIRCHClustering(X, y)
+    clustering.search_best_params()
+    clustering.print_best_params()
 
-THRESHOLD = 85
+    # Add K-means implementation for method 'KMeans' if needed
+    # ...
 
-##################################################################################################################
-print("----------Running clustering without using dimensionality reduction----------")
-"""
-Run Birch
-"""
-BIRCHClustering_original = BIRCHClustering(X_original, y_original)
-BIRCHClustering_original.search_best_params()
-BIRCHClustering_original.print_best_params()
+def run_dimensionality_reduction(X, method, threshold):
+    """
+    Perform dimensionality reduction on the provided data.
 
+    Parameters:
+    - X: Features matrix
+    - method: Dimensionality reduction method ('PCA' or 'TruncatedSVD')
+    - threshold: Threshold for dimensionality reduction
 
-"""
-Run K-means
-#TODO
-"""
+    Returns:
+    - Transformed data after dimensionality reduction
+    """
+    if method == 'PCA':
+        pca = CustomPCA(X, threshold=threshold)
+        pca.fit()
+        return pca.X_transformed
+    elif method == 'TruncatedSVD':
+        best_n_components, _ = find_best_n_components(X, threshold=threshold)
+        svd = TruncatedSVD(n_components=best_n_components)
+        return svd.fit_transform(X)
+    else:
+        raise ValueError("Invalid dimensionality reduction method.")
 
+if __name__ == "__main__":
+    # Define command-line arguments
+    parser = argparse.ArgumentParser(description='Clustering and Dimensionality Reduction Script')
 
-##################################################################################################################
-##################################################################################################################
-"""
-Perform reduction of dimensionality using PCA
-"""
-pca = CustomPCA(X_original, threshold=THRESHOLD)
-pca.fit()
-X_PCA = pca.X_transformed  # Transformed data after PCA
+    # Add arguments
+    parser.add_argument('--dataset', type=str, choices=['waveform', 'kr-vs-kp', 'vowel'], default='waveform',
+                        help='Specify the dataset (waveform, kr-vs-kp, vowel)')
+    parser.add_argument('--type_dataset', type=str, choices=['numerical', 'categorical', 'mixed'], default='numerical',
+                        help='Specify the type of dataset (numerical, categorical, mixed)')
 
-print("----------Running clustering using PCA----------")
-"""
-Run Birch
-"""
-BIRCHClustering_PCA = BIRCHClustering(X_PCA, y_original)
-BIRCHClustering_PCA.search_best_params()
-BIRCHClustering_PCA.print_best_params()
+    args = parser.parse_args()
 
+    DATASET = args.dataset
+    TYPE_DATASET = args.type_dataset
+    data_path = f"../data/raw/{DATASET}.arff"
 
-"""
-Run K-means
-#TODO
-"""
+    # Load ARFF dataset and metadata
+    data, meta = arff.loadarff(data_path)
 
-##################################################################################################################
-##################################################################################################################
-"""
-Perform reduction of dimensionality using TruncatedSVD
-"""
-best_n_components, _ = find_best_n_components(X_original, threshold=THRESHOLD)
-svd = TruncatedSVD(n_components=best_n_components)
-X_SVD = svd.fit_transform(X_original)
+    # Preprocessing data
+    dataset = Dataset(data_path, method=TYPE_DATASET)
+    X_original = dataset.processed_data.drop(columns=['y_true']).values
+    y_original = dataset.y_true
 
-print("----------Running clustering using TruncatedSVD----------")
-"""
-Run Birch
-"""
-BIRCHClustering_SVD = BIRCHClustering(X_SVD, y_original)
-BIRCHClustering_SVD.search_best_params()
-BIRCHClustering_SVD.print_best_params()
+    THRESHOLD = 85
 
+    ##################################################################################################################
+    print("----------Running clustering without using dimensionality reduction----------")
+    run_clustering(X_original, y_original, method='BIRCH', threshold=THRESHOLD)
+    # TODO: Add K-means clustering without dimensionality reduction if needed
 
-"""
-Run K-means
-#TODO
-"""
+    ##################################################################################################################
+    ##################################################################################################################
+    print("----------Running clustering using PCA----------")
+    X_PCA = run_dimensionality_reduction(X_original, method='PCA', threshold=THRESHOLD)
+    run_clustering(X_PCA, y_original, method='BIRCH', threshold=THRESHOLD)
+    # TODO: Add K-means clustering using PCA if needed
+
+    ##################################################################################################################
+    ##################################################################################################################
+    print("----------Running clustering using TruncatedSVD----------")
+    X_SVD = run_dimensionality_reduction(X_original, method='TruncatedSVD', threshold=THRESHOLD)
+    run_clustering(X_SVD, y_original, method='BIRCH', threshold=THRESHOLD)
+    # TODO: Add K-means clustering using TruncatedSVD if needed
