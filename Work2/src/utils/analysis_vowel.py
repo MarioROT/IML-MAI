@@ -45,7 +45,7 @@ plt.title('Frequency of Classes')
 plt.xlabel('Class')
 plt.ylabel('Frequency')
 plt.xticks(rotation=0)
-plt.savefig(f'../../Results/images/{DATASET}_classes.png')
+plt.savefig(f'../../results/images/{DATASET}_classes.png')
 plt.close()
 
 # Correlation Matrix
@@ -55,7 +55,7 @@ correlation_matrix = X_2.corr()
 plt.figure(figsize=(10, 8))
 sns.heatmap(correlation_matrix, annot=False, cmap='coolwarm', fmt=".2f")
 plt.title('Correlation Matrix')
-plt.savefig(f'../../Results/images/{DATASET}_cm.png')
+plt.savefig(f'../../results/images/{DATASET}_cm.png')
 plt.close()
 
 # Select the relevant columns
@@ -70,5 +70,5 @@ for i, feature in enumerate(selected_columns):
     axes[i].set_xlabel('Sex')
     axes[i].set_ylabel(feature)
 plt.tight_layout()
-plt.savefig(f'../../Results/images/{DATASET}_scatter_plots.png')
+plt.savefig(f'../../results/images/{DATASET}_scatter_plots.png')
 

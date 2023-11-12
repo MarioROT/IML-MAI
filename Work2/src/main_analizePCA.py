@@ -89,7 +89,7 @@ def plot_pca_comparison(X_pca_custom, X_pca_sklearn, X_pca_incremental, y_pca):
     plt.tight_layout()
 
     # Save the figure or display it
-    plt.savefig(f'../Results/images/{DATASET}_Comparison_PCA.png')
+    plt.savefig(f'../results/images/{DATASET}_Comparison_PCA.png')
 
 
 if __name__ == "__main__":

@@ -76,7 +76,7 @@ class CustomPCA:
         plt.xlabel('Number of components')
         plt.ylabel('Cumulative explained variance')
         plt.title('PCA: Explained Variance Ratio vs. Number of Components')
-        plt.savefig(f'../Results/images/{dataset_name}_PCAcomponents.png')
+        plt.savefig(f'../results/images/{dataset_name}_PCAcomponents.png')
 
     def plot_2D(self, dataset_name, y):
         plt.figure(figsize=(10, 8))
@@ -84,4 +84,4 @@ class CustomPCA:
         plt.xlabel('PC1')
         plt.ylabel('PC2')
         plt.title(f'2 components')
-        plt.savefig(f'../Results/images/{dataset_name}_PCA2D.png')
+        plt.savefig(f'../results/images/{dataset_name}_PCA2D.png')
