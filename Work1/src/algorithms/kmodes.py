@@ -10,7 +10,7 @@ class KModes:
         self.labels_ = None
 
     def fit(self, X):
-        X = X.astype(np.uint)
+        X = X.astype(int)
 
         # Insert the first K objects into K new clusters.
         initial_clusters = X[np.random.choice(X.shape[0], self.n_clusters, replace=False)]

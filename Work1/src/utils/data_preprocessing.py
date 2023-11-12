@@ -5,10 +5,8 @@ from pathlib import Path
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, OrdinalEncoder
+from sklearn.preprocessing import StandardScaler, KBinsDiscretizer, OneHotEncoder, OrdinalEncoder
 from scipy.io import arff
-
-# from torch.utils.data import Dataset
 
 class Dataset():
     """"Class aimed to preprocess datasets comming from arff files, you can access to each 
@@ -62,7 +60,6 @@ class Dataset():
         if "Train_or_Test" in self.df.columns:
             self.df = self.df.drop(columns=["Train_or_Test"])
 
-        num_samples_after_removal, num_features_after_removal = self.df.shape
         nulls = self.check_null_values(self.df)
         self.processed_data = self.standardization(self.df, self.method, self.cat_transf, self.wmean, self.wstd, len(self.y_true.unique()))
         num_samples_final, num_features_final = self.processed_data.shape
@@ -89,7 +86,6 @@ class Dataset():
         stats = pd.DataFrame.from_dict(stats,orient = 'index', columns=data.columns)
         return gen_stats, stats
         
-
     @staticmethod
     def string_decode(df: pd.DataFrame):
         for col in df.columns:
@@ -114,7 +110,9 @@ class Dataset():
         # numerical features
         num_features = df.select_dtypes(include=np.number).columns
         cat_features = df.select_dtypes(exclude=np.number).columns
+
         if method == 'numerical':
+            # numerical features
             num_transformer = Pipeline(steps=[
                 ('replace_nan', SimpleImputer(strategy='mean')),
                 ('scaler', StandardScaler(with_mean=wmean,with_std=wstd))])
@@ -128,9 +126,11 @@ class Dataset():
                     ('replace_nan', SimpleImputer(strategy='most_frequent')),
                     ('encoder', OrdinalEncoder())])
         elif method == 'categorical':
+            # numerical features
             num_transformer = Pipeline(steps=[
                 ('replace_nan', SimpleImputer(strategy='mean')),
-                ('scaler', StandardScaler(with_mean=wmean,with_std=wstd))])
+                ('scaler', StandardScaler(with_mean=wmean,with_std=wstd)),
+                ('discretizer', KBinsDiscretizer(num_cat, encode='ordinal'))])
             # categorical features
             cat_transformer = Pipeline(steps=[
                 ('replace_nan', SimpleImputer(strategy='most_frequent')),
@@ -155,37 +155,23 @@ class Dataset():
         # dataset cases
         # case 1: categorical and numerical features
         if len(cat_features) != 0 and len(num_features) != 0:
-            # columns_encoder = ct.transformers_[1][1]['encoder']. \
-            #     get_feature_names_out(cat_features)
-            # columns = num_features.union(pd.Index(columns_encoder), sort=False)
-            columns = df.columns
+            columns_encoder = ct.transformers_[1][1]['encoder']. \
+                get_feature_names_out(cat_features)
+            columns = num_features.union(pd.Index(columns_encoder), sort=False)
         # case 2: only categorical features
         elif len(cat_features) != 0 and len(num_features) == 0:
-            # columns = ct.transformers_[1][1]['encoder']. \
-            #     get_feature_names_out(cat_features)
-            # columns = pd.Index(columns)
-            columns = df.columns
-            try:
-                X_trans = X_trans.toarray()
-            except:
-                pass
+            columns = ct.transformers_[1][1]['encoder']. \
+                get_feature_names_out(cat_features)
+            columns = pd.Index(columns)
 
         # case 3: only numerical features
         elif len(cat_features) == 0 and len(num_features) != 0:
             columns = num_features
-
-        # catch an error
         else:
             print('There is a problem with features')
 
         # processed dataset
         processed_df = pd.DataFrame(X_trans, columns=columns)
-        if method == 'categorical' and len(num_features) != 0:
-            try:
-                processed_df[processed_df.select_dtypes(exclude='object').columns] = processed_df.select_dtypes(exclude='object').apply(lambda x: pd.qcut(x,num_cat,labels=False))
-                processed_df = processed_df.astype(str)
-            except:
-                pass
         return processed_df
 
 if __name__ == '__main__':

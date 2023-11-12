@@ -43,7 +43,7 @@ def process_kmeans(data_path):
     kmeans = KMeans(k=3)
     kmeans.fit(X)
     labels = kmeans.predict(X)
-    accuracy = map_clusters_to_labels(labels, true_labels)
+    accuracy = compute_accuracy(map_clusters_to_labels(labels, true_labels), true_labels)
     print(f"My KMeans Accuracy: {accuracy * 100:.2f}%")
 
     # Scikit-learn KMeans
@@ -52,7 +52,7 @@ def process_kmeans(data_path):
     sk_kmeans = SKLearnKMeans(n_clusters=3, random_state=42, n_init=10)
     sk_kmeans.fit(X)
     sk_labels = sk_kmeans.labels_
-    sk_accuracy = map_clusters_to_labels(sk_labels, true_labels)
+    sk_accuracy = compute_accuracy(map_clusters_to_labels(sk_labels, true_labels), true_labels)
     print(f"Scikit-learn KMeans Accuracy: {sk_accuracy * 100:.2f}%")
 
     #print(labels)
@@ -79,10 +79,10 @@ def process_kmodes(data_path):
 if __name__ == "__main__":
     #print("Processing KMeans on waveform.arff")
     # process_kmeans('../data/raw/waveform.arff')
-    # process_kmeans('../data/raw/iris.arff')
+    process_kmeans('../data/raw/vowel.arff')
     # process_FCM('../data/raw/waveform.arff')
     # process_FCM('../data/raw/iris.arff')
     # process_kprototypes('../data/raw/iris.arff')
 
     #print("\nProcessing KModes on dataset_24_mushroom.arff")
-    process_kmodes('../data/raw/dataset_24_mushroom.arff')
+    # process_kmodes('../data/raw/dataset_24_mushroom.arff')
