@@ -51,7 +51,7 @@ class SklearnPCA():
 
         return self.transformed_data
 
-    def incrementalPCA(self, num_components):
+    def iPCA(self, num_components):
         self.Version='sklearn Incremental PCA'
         x = self.data
 
@@ -71,7 +71,7 @@ class SklearnPCA():
 
         return self.transformed_data
 
-    def visualize(self, labels, axes=[0, 1, 2, 3], figsize=(10, 10), data2plot='Original', exclude = [], layout=None, axis=None, title_size = 12, save=None, ):
+    def visualize(self, labels, axes=[0, 1, 2, 3], figsize=(10, 10), data2plot='Original', exclude = [], layout=None, axis=None, title_size = 12, save=None):
         data = {'Original':self.data, 'Reconstructed':self.reconstructed_data, 'Transformed':self.transformed_data}[data2plot]
         title = data2plot + ' Data'  
 
@@ -89,107 +89,22 @@ class SklearnPCA():
         cg = custom_grids([],layout[0], layout[1], figsize=figsize, axis=axis, title_size=title_size, use_grid_spec = False)
         cg.show()
 
-        # values = []
-        # for i in axes:
-        #     values.append(data[:, i])
-        # values = np.array(values).T
-        # dims = len(axes)
-
         for k,group in plots.items():
             for i,v in enumerate(group):
-                if k == '2d':
-                    p = cg.add_plot(title+ ' ' + self.Version)
-                    p.scatter(data[:, v[0]], data[:, v[1]], c=labels)
-                    p.xaxis.set_ticklabels([])
-                    p.yaxis.set_ticklabels([])
-                    p.set_xlabel(v[0])
-                    p.set_ylabel(v[1])
-                elif k == '3d':
-                    ax = cg.add_plot(projection=True, row_last= True if i == len(group)-1 else False)
-                    ax.scatter(data[:, v[0]], data[:, v[1]], data[:, v[2]], c=labels, s=15)
-                    ax.set_title(title+ ' ' + self.Version,fontsize=title_size)
-                    ax.xaxis.set_ticklabels([])
-                    ax.yaxis.set_ticklabels([])
-                    ax.zaxis.set_ticklabels([])
-                    ax.set_xlabel(v[0])
-                    ax.set_ylabel(v[1])
-                    ax.set_zlabel(v[2])
-                elif k == '4d':
-                    ax = cg.add_plot(projection=True, row_last= True if i == len(group)-1 else False)
-                    ax.scatter(data[:, v[0]], data[:, v[1]], data[:, v[2]], c=labels, s=data[:, v[3]] * 10)
-                    ax.set_title(title+ ' ' + self.Version,fontsize=title_size)
-                    ax.xaxis.set_ticklabels([])
-                    ax.yaxis.set_ticklabels([])
-                    ax.zaxis.set_ticklabels([])
-                    ax.set_xlabel(v[0])
-                    ax.set_ylabel(v[1])
-                    ax.set_zlabel(v[2])
+                if k in ['2d', '3d', '4d']:
+                    if k == '2d':
+                        ax = cg.add_plot(title+ ' ' + self.Version, clear_ticks=True, axlabels=v)
+                        ax.scatter(data[:, v[0]], data[:, v[1]], c=labels)
+                    else: 
+                        ax = cg.add_plot(title+ ' ' + self.Version,projection=True, clear_ticks=True, axlabels=v, row_last= True if i == len(group)-1 else False)
+                        ax.scatter(data[:, v[0]], data[:, v[1]], data[:, v[2]], c=labels, s=15 if k == '3d' else data[:, v[3]] * 10)
                 elif k == 'scree':
-                    p = cg.add_plot('Explained Variance {}'.format(self.Version), last=True)
+                    p = cg.add_plot('Explained Variance {}'.format(self.Version), axlabels=['Number of Components','Variance (%)'], last=True)
                     p.plot(np.cumsum(self.explained_variance_ratio), marker='.', color=colors[1])
                     p.bar(list(range(0, self.n_features)), self.explained_variance_ratio, color=colors[2])
-                    p.set_xlabel('Number of Components')
-                    p.set_ylabel('Variance (%)')
-
         plt.show()
 
         if save:
             plt.savefig(save)
         
-    def scree_plot(self, save=False):
-        plt.plot(np.cumsum(self.explained_variance_ratio), marker='.', color=colors[1])
-        plt.bar(list(range(0, self.n_features)), self.explained_variance_ratio, color=colors[2])
-        plt.title('Explained Variance {}'.format(self.Version))
-        plt.xlabel('Number of Components')
-        plt.ylabel('Variance (%)')
-
-        if save:
-            plt.savefig(save + 'scree_plot_{}.pdf'.format(self.data_name))
-
-        plt.show()
-
-
-    # @staticmethod
-    # def scatter_4D(data, labels, axes, title, data_name, figsize=(10, 10), save=None):
-    #     fig = plt.figure(figsize=figsize)
-    #     ax = fig.add_subplot(111, projection='3d')
-    #     ax.scatter(data[:, 0], data[:, 1], data[:, 2], c=labels, s=data[:, 3] * 10)
-    #     ax.set_title(title)
-    #     ax.set_xlabel(axes[0])
-    #     ax.set_ylabel(axes[1])
-    #     ax.set_zlabel(axes[2])
-
-    #     if save:
-    #         ax.savefig(save + 'scatter_plot_4D_{}_{}.pdf'.format(data_name, title))
-    #     
-    #     plt.show()
-
-
-    # @staticmethod
-    # def scatter_3D(data, labels, axes, title, data_name, figsize=(10, 10), save=None):
-    #     fig = plt.figure(figsize=figsize)
-    #     ax = fig.add_subplot(111, projection='3d')
-    #     ax.scatter(data[:, 0], data[:, 1], data[:, 2], c=labels, s=15)
-    #     ax.set_title(title)
-    #     ax.set_xlabel(axes[0])
-    #     ax.set_ylabel(axes[1])
-    #     ax.set_zlabel(axes[2])
-
-    #     if save: 
-    #         fig.savefig(save + 'scatter_plot_3D_{}_{}.pdf'.format(data_name, title))
-    #     
-    #     plt.show()
-
-
-    # @staticmethod
-    # def scatter_2D(data, labels, axes, title, data_name, figsize=(10, 10), save=None):
-    #     fig = plt.figure(figsize=figsize)
-    #     plt.scatter(data[:, 0], data[:, 1], c=labels) #, cmap='cool' )
-    #     plt.title(title)
-    #     plt.xlabel(axes[0])
-    #     plt.ylabel(axes[1])
-
-    #     if save:
-    #         plt.savefig(save + 'scatter_plot_2D_{}_{}.pdf'.format(data_name, title))
-
-    #     plt.show()
+    

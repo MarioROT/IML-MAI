@@ -93,7 +93,7 @@ class custom_grids():
           im.set_title(self.titles[n], fontsize= self.title_size)
     # plt.show()
 
-  def add_plot(self, title=None, axis=None, position=None, last=False, row_last=False, projection=False):
+  def add_plot(self, title=None, axis=None, position=None, last=False, row_last=False, projection=False, clear_ticks=None, axlabels=None):
     if self.use_grid_spec:
       warnings.warn("To add graphics you need to set 'use_grid_spec' to false when instantiating the class.")
       return 0
@@ -110,6 +110,17 @@ class custom_grids():
     if projection:
         self.axs[nextr][nextc].remove()
         self.axs[nextr][nextc] = self.fig.add_subplot(self.rows,self.cols,self.len_imgs,projection='3d')
+        if clear_ticks:
+            self.axs[nextr][nextc].zaxis.set_ticklabels([])
+        if axlabels:
+            self.axs[nextr][nextc].set_zlabel(axlabels[2])
+
+    if clear_ticks:
+        self.axs[nextr][nextc].xaxis.set_ticklabels([])
+        self.axs[nextr][nextc].yaxis.set_ticklabels([])
+    if axlabels:
+        self.axs[nextr][nextc].set_xlabel(axlabels[0])
+        self.axs[nextr][nextc].set_ylabel(axlabels[1])
   
     if row_last and (nextc < self.cols):
       for e in range(self.cols-(nextc+1)):
