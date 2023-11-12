@@ -17,6 +17,7 @@ class Dataset():
     imputations, scale adjustments, and label encoding are made if necessary. General statistics 
     of the dataset can be obtained by calling the statstics method. The processed data can be
     save using te save method."""
+  
     def __init__(self, 
                  data_path: str,
                  with_mean: bool = True, 
@@ -92,19 +93,24 @@ class Dataset():
             if df[col].dtype == object:
                 df[col] = df[col].str.decode('utf-8')
         return df
+
     @staticmethod
     def remove_predicted_value(df: pd.DataFrame):
         return df.iloc[:, :-1]
+    
     @staticmethod
     def get_predicted_value(df: pd.DataFrame):
         return df.iloc[:, -1]
+    
     @staticmethod
     def check_null_values(df: pd.DataFrame):
         return df.isnull().sum()
+    
     @staticmethod
     def encode_labels(labels, classes_relation):
         num_classes = [classes_relation[item] for item in labels]
         return num_classes
+    
     @staticmethod
     def standardization(df: pd.DataFrame, method, cat_transf, wmean=True, wstd=True, num_cat=2):
         # numerical features
