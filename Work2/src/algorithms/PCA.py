@@ -10,19 +10,29 @@ import matplotlib.pyplot as plt
 
 import pandas as pd
 from numpy.linalg import eig
+from itertools import combinations
+from utils.custom_plots import custom_grids
+
+plt.rcParams["image.cmap"] = "tab20"
+# Para cambiar el ciclo de color por defecto en Matplotlib
+plt.rcParams['axes.prop_cycle'] = plt.cycler(color=plt.cm.tab20.colors)
+#Set_ColorsIn(plt.cm.Set2.colors)
+colors = plt.cm.tab20.colors
 
 
 class CustomPCA:
-    def __init__(self, X, k=None, threshold=85):
+    def __init__(self, X, data_name, k=None, threshold=85):
         print("----Performing PCA----")
         self.X = X
+        self.dataname= dataname
         self.k = k
         self.threshold_exp_var = threshold  # 85%
         self.X_reconstructed = None
         self.X_transformed = None
         self.cum_explained_variance = 0
+        self.Version='custom_PCA'
 
-    def fit(self):
+    def fit(self, num_components=None):
         print("Original dataset: ", self.X)
         # Compute the mean centered vector of the data
         mean_centered_vector = (self.X - np.mean(self.X, axis=0))
@@ -55,6 +65,7 @@ class CustomPCA:
         explained_variance = [(i / self.eig_vals_total) * 100 for i in self.eig_vals_sorted]
         explained_variance = np.round(explained_variance, 2)
         self.cum_explained_variance = np.cumsum(explained_variance)
+        self.explained_variance_ratio=explained_variance
 
         # Determine k based on cumulative explained variance. Higher than 'threshold_exp_var'
         if self.k is None:
@@ -63,12 +74,13 @@ class CustomPCA:
 
         # Project data
         self.X_transformed = self.X.dot(W.T)
-        self.X_reconstructed = self.X_transformed.T.dot(W.T) + np.mean(self.X, axis=0)
+        self.X_reconstructed = self.X_transformed.dot(W.T) + np.mean(self.X, axis=0)
         print("Original data shape: ", self.X.shape)
         print("Transformed dataset: ", self.X_transformed)
         print(
             f"Transformed data shape: {self.X_transformed.shape} captures {self.cum_explained_variance[self.X_transformed.shape[1] - 1]:0.2f}% of total "
             f"variation (own PCA)")
+        self.transformed_data=self.X_transformed
 
     def visualize(self, labels, axes=[0, 1, 2, 3], figsize=(10, 10), data2plot='Original', exclude = [], layout=None, axis=None, title_size = 12, save=None):
         data = {'Original':self.X, 'Reconstructed':self.X_reconstructed, 'Transformed':self.X_transformed}[data2plot]
@@ -80,7 +92,8 @@ class CustomPCA:
                 plots[str(len(comb))+'d'] = []
             plots[str(len(comb))+'d'].append(comb)
 
-        plots['scree'] = [(True)]  
+        if data2plot == 'Transformed':
+            plots['scree'] = [(True)]  
         plots = {k:v for k,v in plots.items() if k not in exclude}
 
         layout = [len(plots), max(len(l) for l in plots.values())] if not layout else layout
@@ -97,10 +110,10 @@ class CustomPCA:
                     else: 
                         ax = cg.add_plot(title+ ' ' + self.Version,projection=True, clear_ticks=True, axlabels=v, row_last= True if i == len(group)-1 else False)
                         ax.scatter(data[:, v[0]], data[:, v[1]], data[:, v[2]], c=labels, s=15 if k == '3d' else data[:, v[3]] * 10)
-                elif k == 'scree':
+                elif k == 'scree' and data2plot == 'Transformed':
                     p = cg.add_plot('Explained Variance {}'.format(self.Version), axlabels=['Number of Components','Cumulative explained variance'], last=True)
                     p.plot(np.cumsum(self.explained_variance_ratio), marker='.', color=colors[1])
-                    p.bar(list(range(0, self.n_features)), self.explained_variance_ratio, color=colors[2])
+                    p.bar(list(range(0, self.k)), self.explained_variance_ratio, color=colors[2])
         plt.show()
 
         if save:

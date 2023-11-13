@@ -113,14 +113,38 @@ class custom_grids():
         if clear_ticks:
             self.axs[nextr][nextc].zaxis.set_ticklabels([])
         if axlabels:
-            self.axs[nextr][nextc].set_zlabel(axlabels[2])
-
-    if clear_ticks:
+            self.axs[nextr][nextc].set_zlabel(axlabels[2])        
+        
+    if self.rows <= 1 and self.cols<=1:
+      if clear_ticks:
+        self.axs.xaxis.set_ticklabels([])
+        self.axs.yaxis.set_ticklabels([])
+      if axlabels:
+        self.axs.set_xlabel(axlabels[0])
+        self.axs.set_ylabel(axlabels[1])
+    elif self.rows <= 1:
+      if clear_ticks:
+        self.axs[position[1]].xaxis.set_ticklabels([])
+        self.axs[position[1]].yaxis.set_ticklabels([])
+      if axlabels:
+        self.axs[position[1]].set_xlabel(axlabels[0])
+        self.axs[position[1]].set_ylabel(axlabels[1])
+    elif self.cols <=1:
+      if clear_ticks:
+        self.axs[position[0]].xaxis.set_ticklabels([])
+        self.axs[position[0]].yaxis.set_ticklabels([])
+      if axlabels:
+        self.axs[position[0]].set_xlabel(axlabels[0])
+        self.axs[position[0]].set_ylabel(axlabels[1])     
+    else:
+      if clear_ticks:
         self.axs[nextr][nextc].xaxis.set_ticklabels([])
         self.axs[nextr][nextc].yaxis.set_ticklabels([])
-    if axlabels:
+      if axlabels:
         self.axs[nextr][nextc].set_xlabel(axlabels[0])
         self.axs[nextr][nextc].set_ylabel(axlabels[1])
+    
+    
   
     if row_last and (nextc < self.cols):
       for e in range(self.cols-(nextc+1)):
@@ -137,19 +161,24 @@ class custom_grids():
         self.len_imgs += 1
 
 
-    if self.rows <= 1:
-      if self.cols <= 1:
-        if axis:
-          self.axs.axis(axis)
-        if title:
-          self.axs.set_title(title, fontsize= self.title_size)
-        return self.axs
-      else:
-        if axis:
-          self.axs[position[1]].axis(axis)
-        if title:
-          self.axs[position[1]].set_title(title, fontsize= self.title_size)
-        return self.axs[position[1]]
+    if self.rows <= 1 and self.cols<=1:
+      if axis:
+        self.axs.axis(axis)
+      if title:
+        self.axs.set_title(title, fontsize= self.title_size)
+      return self.axs
+    elif self.rows <= 1:
+      if axis:
+        self.axs[position[1]].axis(axis)
+      if title:
+        self.axs[position[1]].set_title(title, fontsize= self.title_size)
+      return self.axs[position[1]]
+    elif self.cols <= 1:
+      if axis:
+        self.axs[position[0]].axis(axis)
+      if title:
+        self.axs[position[0]].set_title(title, fontsize= self.title_size)
+      return self.axs[position[0]]
     else:
       if axis:
         self.axs[position[0]][position[1]].axis(axis)

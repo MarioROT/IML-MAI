@@ -32,6 +32,7 @@ class SklearnPCA():
         self.Version = None
 
     def PCA(self, num_components=None):
+        self.n_features=num_components
         self.Version='sklearn PCA'
         x = self.data
 
@@ -52,6 +53,7 @@ class SklearnPCA():
         return self.transformed_data
 
     def iPCA(self, num_components):
+        self.n_features=num_components
         self.Version='sklearn Incremental PCA'
         x = self.data
 

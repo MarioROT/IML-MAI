@@ -1,81 +1,76 @@
-import argparse
-import timeit
-import numpy as np
-
-from utils.data_preprocessing import Dataset
-from utils.best_params_search import BestParamsSearch
-from algorithms.kmeans import KMeans
-from algorithms.kmodes import KModes
-from algorithms.kprototypes import KPrototypes
-from algorithms.fcm_py import FCM
-from algorithms.DBSCAN import DBSCANClustering
 from algorithms.BIRCH import BIRCHClustering
-from sklearn.cluster import DBSCAN, Birch
+from algorithms.kmeans import KMeans
+from algorithms.IsoMap import SklearnIsoMap
+from algorithms.PCA import CustomPCA
+from algorithms.sklearnPCA import SklearnPCA
+from algorithms.TruncatedSVD import SklearnTSVD
+import timeit
+from utils.data_preprocessing import Dataset
 from evaluation.metrics import performance_eval
+import argparse
 
-# Arguments parser from terminal
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-ds", "--datasets", nargs='+', help = "['iris', 'vowel', 'waveform', 'kr-vs-kp']", default=['iris', 'waveform', 'vowel', 'kr-vs-kp'])
-parser.add_argument("-ags", "--algorithms", nargs='+', help = "['kmeans', 'kmodes', 'kprot','fcm', 'dbscan', 'birch']", default=['kmeans', 'kmodes', 'kprot','fcm', 'dbscan', 'birch'])
-parser.add_argument("-bp", "--best_params", help = "[True,False]", default=True, type=bool)
-parser.add_argument("-dsm", "--dataset_method", help = "['numeric', 'categorical', 'mixed']", default='numerical', type=str)
-parser.add_argument("-ce", "--cat_encoding", help = "['onehot', 'ordinal']", default='onehot', type=str)
+parser.add_argument("-ds", "--dataset", help = "['iris', 'vowel', 'waveform', 'kr-vs-kp']", default='iris', type=str)
+parser.add_argument("-exp", "--experiment", help = "['dr', 'fv']", default='dr')
+parser.add_argument("-alg", "--clust_algorithm", help = "['Kmeans','Birch']", default='Kmeans')
+parser.add_argument("-fr", "--feature_reduction", help = "['PCA','iPCA','OwnPCA','TSVD']", default='OwnPCA')
+parser.add_argument("-comp", "--components", help = "Integer", default=4,type=int)
+parser.add_argument("-viz", "--visualization", help = "['PCA', 'Isomap']", default='PCA')
+parser.add_argument("-vcomp", "--viz_components", help = "Integer", default=4,type=int)
 parser.add_argument("-rs", "--random_seed", help = "an integer", default=55, type=int)
 
 args = parser.parse_args()
 
-# Settings
-np.random.seed(seed=args.random_seed)
 
-algorithms = {'kmeans':KMeans,
-              'kmodes':KModes,
-              'kprot': KPrototypes,
-              'fcm': FCM,
-              'dbscan': DBSCANClustering,
-              'birch': BIRCHClustering}
+clust_ags = {'Kmeans':KMeans,
+             'Birch':BIRCHClustering}
+clust_ags_params = {'Kmeans':{'k':args.components, 'max_iters':100},
+                    'Birch':{'X':None}}
 
-# algorithm_params = {'kmeans':{'k':3},
-#                     'kmodes':{'k':3},
-#                     'kprot':{'k':3},
-#                     'fcm':{'C':2},
-#                     'dbscan': {'eps':5, 'min_samples':20, 'metric':'euclidean'},
-#                     'birch': {'threshold': 1, 'branching_factor': 20}}
+dr_ags = {'OwnPCA': CustomPCA,
+          'PCA': SklearnPCA,
+          'iPCA':SklearnPCA,
+          'TSVD':SklearnTSVD}
 
-algorithm_params = {'kmeans':{'k':[3,7,9,11,13,15]},
-                    'kmodes':{'n_clusters':[3,7,9,11,13,15]},
-                    'kprot':{'k':[3,7,9,11,13,15]},
-                    'fcm':{'C':[2,3,5,7]},
-                    'dbscan': {'eps':5, 'min_samples':20, 'metric':'euclidean'},
-                    'birch': {'threshold': 1, 'branching_factor': 20}}
 
-# Algorithms execution over datasets
-for dataset in args.datasets:
-    data = Dataset(f'../data/raw/{dataset}.arff', method=args.dataset_method, cat_transf=args.cat_encoding)
-    X = data.processed_data.iloc[:,:-1].values
-    Y = data.processed_data.iloc[:,-1].values
+data = Dataset(f'../data/raw/{args.dataset}.arff', cat_transf='onehot')
+X = data.processed_data.iloc[:,:-1].values
+Y = data.processed_data.iloc[:,-1].values
 
-    print(f'\n------- Results for {dataset} dataset:')
-    for agm in args.algorithms:
-        if agm in ['kmeans', 'kmodes', 'kprot','fcm']:
-            if args.best_params:
-                algorithm_params[agm] = BestParamsSearch(algorithms[agm], algorithm_params[agm], X, Y, ['accuracy'], [agm, dataset, args.dataset_method, args.random_seed])[0]
-                print(f'--- Best params: {algorithm_params[agm]}')
-            else:
-                algorithm = algorithms[agm](**algorithm_params[agm])
-                algorithm.fit(X)
-                predictions = algorithm.predict(X)
-                print(f'\n-- Algorithm {agm}')
-                performance_eval(X, predictions, Y)
+dr_ags_params = {'OwnPCA': {'X':X, 'data_name':args.dataset, 'k':args.components},
+                 'PCA': {'data':X, 'data_name':args.dataset},
+                 'iPCA':{'data':X, 'data_name':args.dataset},
+                 'TSVD':{'data':X, 'data_name':args.dataset}}
 
-        if agm in ['dbscan', 'birch']:
-            if args.best_params:
-                algorithm = algorithms[agm](X, Y)
-                algorithm.search_best_params()
-                algorithm.print_best_params()
-            else:
-                algorithm = Birch if agm == 'birch' else DBSCAN
-                algorithm = algorithm(**algorithm_params[agm])
-                predictions = algorithm.fit_predict(X)
-                print(f'\n-- Algorithm {agm}')
-                performance_eval(X, predictions, Y)
+if args.experiment == 'dr':
+    
+    algorithm = clust_ags[args.clust_algorithm](**clust_ags_params[args.clust_algorithm])
+    algorithm.fit(X)
+    predictions = algorithm.predict(X)
+    print(f'\n-- Original Data - Algorithm {args.clust_algorithm}')
+    performance_eval(X, predictions, Y)
+    
+    dim_red=dr_ags[args.feature_reduction](**dr_ags_params[args.feature_reduction])
+    if args.feature_reduction not in ['PCA','iPCA']:
+        dim_red.fit(args.components)
+    elif args.feature_reduction == 'PCA':
+        dim_red.PCA(args.components)
+    elif args.feature_reduction == 'iPCA':
+        dim_red.iPCA(args.components)
+    dim_red.visualize(Y, axes=range(X.shape[1]),exclude=['4d'], figsize=(30,15), title_size=8)
+    dim_red.visualize(Y, axes=range(args.components),data2plot='Transformed', exclude=['4d'], figsize=(30,15), title_size=8)
+
+    algorithm = clust_ags[args.clust_algorithm](**clust_ags_params[args.clust_algorithm])
+    algorithm.fit(dim_red.transformed_data)
+    predictions = algorithm.predict(dim_red.transformed_data)
+    print(f'\n-- Reducted Data - Algorithm {args.clust_algorithm}')
+    performance_eval(X, predictions, Y)
+    
+
+# else:
+  
+    
+    
+
+

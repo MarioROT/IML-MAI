@@ -15,6 +15,7 @@ class BIRCHClustering:
         self.y_true = y
         self.threshold_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
         self.branching_factor_values = [10, 20, 30, 40, 50]
+        self.labels_
         self.best_params = {
             'Homogeneity': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
             'Completeness': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
@@ -42,7 +43,16 @@ class BIRCHClustering:
             'Silhouette': metrics.silhouette_score(self.X, labels)
         }
         return metrics_scores
-
+    
+    def fit(self, data, threshold=0.5, branching_factor=50):
+        birch = Birch(threshold=threshold, branching_factor=branching_factor)
+        birch.fit(data)
+        self.labels_ = birch.labels_
+        return self.labels_
+        
+    def predict(self,data):
+        return self.labels_
+                    
     def search_best_params(self):
         for threshold, branching_factor in product(self.threshold_values, self.branching_factor_values):
             birch = Birch(threshold=threshold, branching_factor=branching_factor)
