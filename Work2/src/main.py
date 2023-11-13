@@ -28,7 +28,7 @@ args = parser.parse_args()
 clust_ags = {'Kmeans':KMeans,
              'Birch':BIRCHClustering}
 clust_ags_params = {'Kmeans':{'k':args.components, 'max_iters':100},
-                    'Birch':{'X':None}}
+                    'Birch':{'X':None, 'y': None}}
 
 dr_ags = {'OwnPCA': CustomPCA,
           'PCA': SklearnPCA,

@@ -15,7 +15,7 @@ class BIRCHClustering:
         self.y_true = y
         self.threshold_values = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
         self.branching_factor_values = [10, 20, 30, 40, 50]
-        self.labels_
+        self.labels_ = None
         self.best_params = {
             'Homogeneity': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
             'Completeness': {'score': -1, 'threshold': None, 'branching_factor': None, 'num_clusters': None},
