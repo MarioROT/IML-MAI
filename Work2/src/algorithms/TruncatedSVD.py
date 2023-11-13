@@ -80,7 +80,9 @@ class SklearnTSVD():
                 plots[str(len(comb))+'d'] = []
             plots[str(len(comb))+'d'].append(comb)
 
-        plots['scree'] = [(True)]  
+        if data2plot == 'Transformed':
+            plots['scree'] = [(True)]  
+             
         plots = {k:v for k,v in plots.items() if k not in exclude}
 
         layout = [len(plots), max(len(l) for l in plots.values())] if not layout else layout
@@ -97,7 +99,9 @@ class SklearnTSVD():
                     else: 
                         ax = cg.add_plot(title+ ' ' + self.Version,projection=True, clear_ticks=True, axlabels=v, row_last= True if i == len(group)-1 else False)
                         ax.scatter(data[:, v[0]], data[:, v[1]], data[:, v[2]], c=labels, s=15 if k == '3d' else data[:, v[3]] * 10)
-                elif k == 'scree':
+                elif k == 'scree' and data2plot=='Transformed':
+                    cg = custom_grids([],1, 1, use_grid_spec=False)
+                    cg.show()
                     p = cg.add_plot('Explained Variance {}'.format(self.Version), axlabels=['Number of Components','Variance (%)'], last=True)
                     p.plot(np.cumsum(self.explained_variance_ratio), marker='.', color=colors[1])
                     p.bar(list(range(0, self.n_features)), self.explained_variance_ratio, color=colors[2])

@@ -16,7 +16,7 @@ parser.add_argument("-exp", "--experiment", help = "['dr', 'fv']", default='dr')
 parser.add_argument("-alg", "--clust_algorithm", help = "['Kmeans','Birch']", default='Kmeans')
 parser.add_argument("-fr", "--feature_reduction", help = "['PCA','iPCA','OwnPCA','TSVD']", default='OwnPCA')
 parser.add_argument("-comp", "--components", help = "Integer", default=4,type=int)
-parser.add_argument("-viz", "--visualization", help = "['PCA', 'Isomap']", default='PCA')
+parser.add_argument("-viz", "--visualization", help = "['PCA', 'iPCA','OwnPCA', 'Isomap']", default='PCA')
 parser.add_argument("-vcomp", "--viz_components", help = "Integer", default=4,type=int)
 parser.add_argument("-rs", "--random_seed", help = "an integer", default=55, type=int)
 
@@ -43,6 +43,17 @@ dr_ags_params = {'OwnPCA': {'X':X, 'data_name':args.dataset, 'k':args.components
                  'iPCA':{'data':X, 'data_name':args.dataset},
                  'TSVD':{'data':X, 'data_name':args.dataset}}
 
+viz_ags = {'OwnPCA': CustomPCA,
+          'PCA': SklearnPCA,
+          'iPCA':SklearnPCA,
+          'Isomap':SklearnIsoMap}
+
+viz_ags_params = {'OwnPCA': {'X':X, 'data_name':args.dataset, 'k':args.components},
+                 'PCA': {'data':X, 'data_name':args.dataset},
+                 'iPCA':{'data':X, 'data_name':args.dataset},
+                 'Isomap':{'data':X, 'data_name':args.dataset}}
+
+
 if args.experiment == 'dr':
     
     algorithm = clust_ags[args.clust_algorithm](**clust_ags_params[args.clust_algorithm])
@@ -58,8 +69,10 @@ if args.experiment == 'dr':
         dim_red.PCA(args.components)
     elif args.feature_reduction == 'iPCA':
         dim_red.iPCA(args.components)
-    dim_red.visualize(Y, axes=range(X.shape[1]),exclude=['4d'], figsize=(30,15), title_size=8)
-    dim_red.visualize(Y, axes=range(args.components),data2plot='Transformed', exclude=['4d'], figsize=(30,15), title_size=8)
+    dim_red.visualize(Y, layout=(2,5) ,axes=range(4),exclude=['4d'], figsize=(30,15), title_size=8)
+    dim_red.visualize(Y,  layout=(2,5), axes=range(4),data2plot='Transformed', exclude=['4d'], figsize=(30,15), title_size=8)
+
+
 
     algorithm = clust_ags[args.clust_algorithm](**clust_ags_params[args.clust_algorithm])
     algorithm.fit(dim_red.transformed_data)
@@ -68,9 +81,37 @@ if args.experiment == 'dr':
     performance_eval(X, predictions, Y)
     
 
-# else:
-  
+else:
+    algorithm = clust_ags[args.clust_algorithm](**clust_ags_params[args.clust_algorithm])
+    algorithm.fit(X)
+    predictions = algorithm.predict(X)
+    print(f'\n-- Original Data - Algorithm {args.clust_algorithm}')
+    performance_eval(X, predictions, Y)
     
+    dim_red=dr_ags[args.feature_reduction](**dr_ags_params[args.feature_reduction])
+    if args.feature_reduction not in ['PCA','iPCA']:
+        dim_red.fit(args.components)
+    elif args.feature_reduction == 'PCA':
+        dim_red.PCA(args.components)
+    elif args.feature_reduction == 'iPCA':
+        dim_red.iPCA(args.components)
+
+    algorithm = clust_ags[args.clust_algorithm](**clust_ags_params[args.clust_algorithm])
+    algorithm.fit(dim_red.transformed_data)
+    predictions = algorithm.predict(dim_red.transformed_data)
+    print(f'\n-- Reducted Data - Algorithm {args.clust_algorithm}')
+    performance_eval(X, predictions, Y)
+
+    viz=viz_ags[args.visualization](**viz_ags_params[args.visualization])
+    if viz_ags[args.visualization] not in ['PCA', 'iPCA']: 
+        viz.fit(args.components)
+    elif viz_ags[args.visualization] == 'PCA':
+        viz.PCA(args.components)
+    elif viz_ags[args.visualization] == 'iPCA':
+        viz.IPCA(args.components)
     
+    viz.visualize(Y, layout=(2,5) ,axes=range(4),exclude=['4d'], figsize=(30,15), title_size=8)
+    viz.visualize(Y,  layout=(3,5), axes=range(4),data2plot='Transformed', exclude=['4d'], figsize=(30,15), title_size=8)
+            
 
 
