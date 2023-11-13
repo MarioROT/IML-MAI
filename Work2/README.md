@@ -1,5 +1,5 @@
 # Introduction to Machine Learning
-## Work 1 - Clustering Exercise
+## Work 2 - Dimensionality reduction with PCA and TruncatedSVD and Visualization using PCA and ISOMAP
 
 ## Overview
 "Work 2" is part of the Introduction to Machine Learning course for the Master in Artificial Intelligence at UPC. This phase focuses on dimensionality reduction techniques like PCA and truncatedSVD and to visualize visualize with PCA and ISOMAP algorithms several data sets from the UCI repository
