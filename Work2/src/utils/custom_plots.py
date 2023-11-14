@@ -20,6 +20,7 @@ class custom_grids():
              imgs: List,
              rows: int = 1,
              cols: int = 1,
+             suptitle: str = None,
              titles: List = None,
              order: List = None,
              figsize: Tuple = (10,10),
@@ -31,6 +32,7 @@ class custom_grids():
       self.imgs = imgs
       self.rows = rows
       self.cols = cols
+      self.suptitle = suptitle
       self.titles = titles
       self.order = order
       self.figsize = figsize
@@ -52,6 +54,7 @@ class custom_grids():
     if not self.use_grid_spec:
       # self.fig, self.axs = plt.subplots(self.rows, self.cols, figsize=self.figsize, subplot_kw=dict(projection='3d'))
       self.fig, self.axs = plt.subplots(self.rows, self.cols, figsize=self.figsize)
+      self.fig.suptitle(self.suptitle)
       if self.rows <= 1 and self.cols <= 1:
         for idx, img in enumerate(self.imgs):
           self.axs.imshow(img, cmap=self.cmap)

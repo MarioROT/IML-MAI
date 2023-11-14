@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.decomposition import TruncatedSVD
-from itertools import combinations
+from itertools import combinations, permutations
 from utils.custom_plots import custom_grids
 from sklearn.manifold import Isomap
 
@@ -31,9 +30,9 @@ class SklearnIsoMap():
             return self.transformed_data
 
 
-    def visualize(self, labels, axes=[0, 1, 2, 3], figsize=(10, 10), data2plot='Original', exclude = [], layout=None, axis=None, title_size = 12, save=None):
+    def visualize(self, labels, axes=[0, 1, 2, 3], title='', figsize=(10, 10), data2plot='Original', exclude = [], layout=None, axis=None, title_size = 12, save=None):
         data = {'Original':self.data, 'Transformed':self.transformed_data}[data2plot]
-        title = data2plot + ' Data'  
+        title = title + ' - ' + data2plot + ' Data ' + self.Version  
 
         plots ={}
         for comb in [com for sub in range(1,4) for com in combinations(axes, sub + 1)]:
@@ -45,17 +44,18 @@ class SklearnIsoMap():
 
         layout = [len(plots), max(len(l) for l in plots.values())] if not layout else layout
 
-        cg = custom_grids([],layout[0], layout[1], figsize=figsize, axis=axis, title_size=title_size, use_grid_spec = False)
-        cg.show()
+        cg = custom_grids([],layout[0], layout[1], title, figsize=figsize, axis=axis, title_size=title_size, use_grid_spec = False)
+        if tuple(exclude) not in  permutations(['4d', '2d', '3d'],r=3):
+            cg.show()
 
         for k,group in plots.items():
             for i,v in enumerate(group):
                 if k in ['2d', '3d', '4d']:
                     if k == '2d':
-                        ax = cg.add_plot(title+ ' ' + self.Version, clear_ticks=True, axlabels=v)
+                        ax = cg.add_plot(clear_ticks=True, axlabels=v)
                         ax.scatter(data[:, v[0]], data[:, v[1]], c=labels)
                     else: 
-                        ax = cg.add_plot(title+ ' ' + self.Version,projection=True, clear_ticks=True, axlabels=v, row_last= True if i == len(group)-1 else False)
+                        ax = cg.add_plot(projection=True, clear_ticks=True, axlabels=v, row_last= True if i == len(group)-1 else False)
                         ax.scatter(data[:, v[0]], data[:, v[1]], data[:, v[2]], c=labels, s=15 if k == '3d' else data[:, v[3]] * 10)
         plt.show()
 

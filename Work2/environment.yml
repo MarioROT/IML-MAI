@@ -26,4 +26,6 @@ dependencies:
       - threadpoolctl==3.2.0
       - tzdata==2023.3
       - wcwidth==0.2.9
+      - matplotlib  
+      - seaborn     
 prefix: /home/mario-rot/.conda/envs/IML8
