@@ -6,7 +6,6 @@ dependencies:
   - certifi=2022.12.7
   - openssl=1.1.1w
   - pip=22.3.1
-  - python=3.7.16
   - setuptools=65.6.3
   - sqlite=3.41.2
   - wheel=0.38.4
