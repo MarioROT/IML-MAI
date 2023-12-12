@@ -1,4 +1,5 @@
 from typing import Tuple, Union
+import os
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -23,12 +24,14 @@ class Dataset():
                  with_mean: bool = True, 
                  with_std: bool = True,
                  method: str = 'numerical',
-                 cat_transf: str = 'onehot'):
+                 cat_transf: str = 'onehot', 
+                 folds: bool = False):
         self.data_path = Path(data_path)
         self.wmean = with_mean
         self.wstd = with_std
         self.method = method
         self.cat_transf = cat_transf
+        self.folds = folds
         self.raw_data = None
         self.metadata = None
         self.df = None 
@@ -36,13 +39,23 @@ class Dataset():
         self.processed_data = None
         self.classes_relation = None
 
-        self.preprocessing()
+        if not self.folds:
+            self.preprocessing()
+        else: 
+            self.fold_paths = os.listdir(self.data_path)
 
     def __len__(self):
         return len(self.df)
 
     def __getitem__(self, idx):
-        return self.processed_data.iloc[idx,:-1], self.processed_data.iloc[idx,-1]
+        if not self.folds:
+            return self.processed_data.iloc[idx,:-1], self.processed_data.iloc[idx,-1]
+        else:
+            org_datpath = self.data_path.copy()
+            self.data_path = self.data_path + self.fold_paths[idx]
+            self.preprocessing()
+            self.data_path = org_datpath
+            return self.processed_data
 
     def import_raw_dataset(self):
         data, self.metadata = arff.loadarff(self.data_path)
