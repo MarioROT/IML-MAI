@@ -52,10 +52,12 @@ class Dataset():
             return self.processed_data.iloc[idx,:-1], self.processed_data.iloc[idx,-1]
         else:
             org_datpath = self.data_path.copy()
-            self.data_path = self.data_path + self.fold_paths[idx]
-            self.preprocessing()
+            self.data_path = Path(self.data_path.as_posix() + self.fold_paths[2*idx])
+            train_fold = self.preprocessing()
+            self.data_path = Path(org_datpath.as_posix() + self.fold_paths[(2*idx)+1])
+            test_fold = self.preprocessing()
             self.data_path = org_datpath
-            return self.processed_data
+            return train_fold, test_fold
 
     def import_raw_dataset(self):
         data, self.metadata = arff.loadarff(self.data_path)
