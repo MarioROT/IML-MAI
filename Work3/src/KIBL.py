@@ -102,37 +102,37 @@ class KIBL:
     true_labels = test_normalized[:, -1]
     predictions=[]
     problem_solving_times = []
-     
-    start_time = time.time()
 
     for instance in test_normalized: 
+      start_time = time.time()
       neighbors=get_neighbors(train_normalized, instance, self.K)
       predict=(self.voting, neighbors)
       predictions.append(predict)
+
+      if self.retention == 'NR':
+        retained_instance = None
+
+      elif self.retention == 'AR':
+        retained_instance = test_row
+
+      elif self.retention == 'DF':
+        if test_row[-1] != predicted_label:
+          return test_row
+
+        else:
+          return None
+
+      elif self.retention == 'DD':
+        #WIP
+        return None
+    
+      if retained_instance is not None:
+        self.X = np.vstack([self.X, retained_instance])
+      
       end_time = time.time()
       problem_solving_times.append(end_time - start_time)
 
-    if self.retention == 'NR':
-      retained_instance = None
+  accuracy = evaluate_accuracy(predictions, true_labels)
+  efficiency = evaluate_efficiency(problem_solving_times)
 
-    elif self.retention == 'AR':
-      retained_instance = test_row
-
-    elif self.retention == 'DF':
-      if test_row[-1] != predicted_label:
-        return test_row
-
-      else:
-        return None
-
-    elif self.retention == 'DD':
-      #WIP
-      return None
-  
-    if retained_instance is not None:
-      self.X = np.vstack([self.X, retained_instance])
-
-    accuracy = evaluate_accuracy(predictions, true_labels)
-    efficiency = evaluate_efficiency(problem_solving_times)
-
-    return accuracy, efficiency         
+  return accuracy, efficiency         
