@@ -6,7 +6,7 @@ from pathlib import Path
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler, KBinsDiscretizer, OneHotEncoder, OrdinalEncoder
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, KBinsDiscretizer, OneHotEncoder, OrdinalEncoder
 from scipy.io import arff
 
 class Dataset():
@@ -25,12 +25,14 @@ class Dataset():
                  with_std: bool = True,
                  method: str = 'numerical',
                  cat_transf: str = 'onehot', 
+                 num_scaler: str ='Minmax',
                  folds: bool = False):
         self.data_path = Path(data_path)
         self.wmean = with_mean
         self.wstd = with_std
         self.method = method
         self.cat_transf = cat_transf
+        self.num_scaler= num_scaler
         self.folds = folds
         self.raw_data = None
         self.metadata = None
@@ -51,11 +53,11 @@ class Dataset():
         if not self.folds:
             return self.processed_data.iloc[idx,:-1], self.processed_data.iloc[idx,-1]
         else:
-            org_datpath = self.data_path.copy()
-            self.data_path = Path(self.data_path.as_posix() + self.fold_paths[2*idx])
-            train_fold = self.preprocessing()
-            self.data_path = Path(org_datpath.as_posix() + self.fold_paths[(2*idx)+1])
+            org_datpath = self.data_path
+            self.data_path = Path(self.data_path.as_posix()+'/'+ self.fold_paths[2*idx])
             test_fold = self.preprocessing()
+            self.data_path = Path(org_datpath.as_posix() + '/'+self.fold_paths[(2*idx)+1])
+            train_fold = self.preprocessing()
             self.data_path = org_datpath
             return train_fold, test_fold
 
@@ -77,7 +79,7 @@ class Dataset():
             self.df = self.df.drop(columns=["Train_or_Test"])
 
         nulls = self.check_null_values(self.df)
-        self.processed_data = self.standardization(self.df, self.method, self.cat_transf, self.wmean, self.wstd, len(self.y_true.unique()))
+        self.processed_data = self.standardization(self.df, self.method, self.cat_transf, self.wmean, self.wstd, len(self.y_true.unique()),self.num_scaler)
         num_samples_final, num_features_final = self.processed_data.shape
         self.processed_data['y_true'] = self.encode_labels(self.y_true, self.classes_relation)
         print(f"Initial Dataset: {num_samples_initial} samples, {num_features_initial} features")
@@ -127,7 +129,7 @@ class Dataset():
         return num_classes
     
     @staticmethod
-    def standardization(df: pd.DataFrame, method, cat_transf, wmean=True, wstd=True, num_cat=2):
+    def standardization(df: pd.DataFrame, method, cat_transf, wmean=True, wstd=True, num_cat=2, num_scaler='Minmax'):
         # numerical features
         num_features = df.select_dtypes(include=np.number).columns
         cat_features = df.select_dtypes(exclude=np.number).columns
@@ -136,7 +138,7 @@ class Dataset():
             # numerical features
             num_transformer = Pipeline(steps=[
                 ('replace_nan', SimpleImputer(strategy='mean')),
-                ('scaler', StandardScaler(with_mean=wmean,with_std=wstd))])
+                ('scaler',MinMaxScaler() if num_scaler=='Minmax' else StandardScaler(with_mean=wmean,with_std=wstd))])
             # categorical features
             if cat_transf == 'onehot':
                 cat_transformer = Pipeline(steps=[
@@ -150,7 +152,7 @@ class Dataset():
             # numerical features
             num_transformer = Pipeline(steps=[
                 ('replace_nan', SimpleImputer(strategy='mean')),
-                ('scaler', StandardScaler(with_mean=wmean,with_std=wstd)),
+                ('scaler',MinMaxScaler() if num_scaler=='Minmax' else StandardScaler(with_mean=wmean,with_std=wstd)),    
                 ('discretizer', KBinsDiscretizer(num_cat, encode='ordinal'))])
             # categorical features
             cat_transformer = Pipeline(steps=[
@@ -159,7 +161,7 @@ class Dataset():
         elif method == 'mixed':
             num_transformer = Pipeline(steps=[
                 ('replace_nan', SimpleImputer(strategy='mean')),
-                ('scaler', StandardScaler(with_mean=wmean,with_std=wstd))])
+                ('scaler',MinMaxScaler() if num_scaler=='Minmax' else StandardScaler(with_mean=wmean,with_std=wstd))])
             # categorical features
             cat_transformer = Pipeline(steps=[
                 ('replace_nan', SimpleImputer(strategy='most_frequent')),
