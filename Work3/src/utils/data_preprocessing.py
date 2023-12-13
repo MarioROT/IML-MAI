@@ -72,7 +72,7 @@ class Dataset():
         self.df, meta = self.import_raw_dataset()
         num_samples_initial, num_features_initial = self.df.shape
         self.y_true = self.get_predicted_value(self.df)
-        self.classes_relation = {k: v for v, k in enumerate(set(self.y_true))}
+        self.classes_relation = {k: v for v, k in enumerate(np.sort(self.y_true.unique()))}
         self.df = self.remove_predicted_value(self.df)
         #If dataset vowels
         if "Train_or_Test" in self.df.columns:
