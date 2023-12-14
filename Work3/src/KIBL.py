@@ -3,15 +3,17 @@ import pandas as pd
 from pandas.api.types import is_numeric_dtype
 from collections import Counter
 import time
+from feature_selection import FeatureSelection
 
 class KIBL:
-    def __init__(self, X=None, K=3, voting='MP', retention='NR', weights = 'ones', normalize=False):
+    def __init__(self, X=None, K=3, voting='MP', retention='NR', weights_m = 'ones', k_weights = 'nonzero', normalize=False):
         print("-------Performing K-IBL-------")
         self.X=X
         self.K=K
         self.voting=voting  #MP: Modified Plurality , BC: Borda Count 
         self.retention=retention #NR: Never Retains, . Always retain (AR) Different Class retention (DF). Degree of Disagreement (DD).
-        self.weights = 
+        self.weights_m = weights_m
+        self.k_weights = k_weights
         self.normalize=normalize
         
     #Normalizing the train data
@@ -31,8 +33,8 @@ class KIBL:
       return data_normalized
 
     #Calculating the euc distance between two instances
-    def euc_distance(self, test_row,train_row, weights):
-      dist = np.sum(weigths * ((test_row-train_row)**2))
+    def euc_distance(self, test_row, train_row):
+      dist = np.sum(self.weights * ((test_row-train_row)**2))
       return np.sqrt(dist)
 
     #Getting the K nearest neighbors with all the data from the learning base
@@ -86,15 +88,17 @@ class KIBL:
           return next(label for label in values if label in max_point_class)
 
     def compute_weights(self, data, method):
-        data = data.loc[:, data.columns != 'y_true']
-        labels = data.loc('y_true')
+        features = data.loc[:, data.columns != 'y_true']
+        labels = data.loc[:,'y_true']
+
+        return FeatureSelection(features, labels, method, self.k_weights).compute_weights()
         
-        if method == 'equal':
-            return np.ones_like(data.iloc[0])
-        elif method == 'correlation':
-            return abs(pd.concat([data,labels], axis=1).corr()['y_true'][:-1].values) 
-        elif method == 'information_gain':
-            return mutual_info_classif(data, np.squeeze(labels))
+        # if method == 'equal':
+        #     return np.ones_like(data.iloc[0])
+        # elif method == 'correlation':
+        #     return abs(pd.concat([data,labels], axis=1).corr()['y_true'][:-1].values) 
+        # elif method == 'information_gain':
+        #     return mutual_info_classif(data, np.squeeze(labels))
 
     def evaluate_accuracy(self, predictions, true_labels):
         correct_count = sum(1 for pred, true_label in zip(predictions, true_labels) if pred == true_label)
@@ -116,7 +120,7 @@ class KIBL:
          
       print('----Data normalized----')  
 
-      weights = self.compute_weights(train_normalized, self.wei)
+      self.weights = self.compute_weights(train_normalized, self.weights_m)
 
       true_labels = test_normalized.iloc[:,-1]
       predictions=[]

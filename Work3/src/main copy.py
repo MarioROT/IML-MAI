@@ -6,7 +6,7 @@ import argparse
 from KIBL import KIBL
 
 
-data = Dataset('C:/Users/52556/Desktop/Alam/ALAM UNI y otros docs/IML-MAI/Work3/data/folded/Nueva carpeta/pen-based', cat_transf='onehot', folds=True)
+data = Dataset('../data/folded/Nueva carpeta/pen-based', cat_transf='onehot', folds=True)
 
 
 #     K=[3,5,7]
@@ -19,7 +19,7 @@ data = Dataset('C:/Users/52556/Desktop/Alam/ALAM UNI y otros docs/IML-MAI/Work3/
         
         
 train,test=data[0]
-IBL= KIBL(X=train, K=3)   
+IBL= KIBL(X=train, K=3, weights_m = 'information_gain', k_weights = '80%')   
 accuracy, efficiency, total_time= IBL.kIBLAlgorithm(test)
 print(accuracy, efficiency, total_time)
 
