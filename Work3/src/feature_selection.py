@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
-
+from scipy.stats import chi2_contingency
+from sklearn.feature_selection import VarianceThreshold, mutual_info_classif, chi2
+from sklearn_relief import ReliefF
 
 class FeatureSelection():
 
@@ -22,7 +24,7 @@ class FeatureSelection():
         elif isinstance(selection, str) and '%' in selection:
             self.selection = round(features.shape[1] * int(selection[:-1]) / 100)
 
-        self.selection = 'nonzero' if method in ['ones'] else self.selection
+        self.selection = 'nonzero' if method in ['ones', 'variance_threshold'] else self.selection
         self.method_params = method_params if method_params else {}
 
     def compute_weights(self):
@@ -33,15 +35,19 @@ class FeatureSelection():
             feats_ranked = dict(sorted(scored_feats.items(), key=lambda item:item[1])[::-1][:self.selection])
             return [1 if k in feats_ranked.keys() else 0 for k in scored_feats.keys()]
 
+    def reliefF_sk(self, features, labels):
+        rel = ReliefF(n_features = self.selection)
+        sel_feats = rel.fit_transform(features, labels)
+        return {k:1 if features[k].values.tolist() in self.T.tolist() else 0 for k in features.columns}
+    
     @staticmethod
     def ones(features, labels):
         return dict(zip(features.columns,np.ones_like(features.iloc[0])))
         
     @staticmethod
     def correlation(features, labels):
-        return abs(pd.concat([features,labels], axis=1).corr()['y_true'][:-1].values) 
-        # elif method == 'information_gain':
-        #     return mutual_info_classif(data, np.squeeze(labels))
+        weights = abs(pd.concat([features,labels], axis=1).corr()['y_true'][:-1].values) 
+        return {k:v for k,v in zip(features.columns, weights)}
 
     @staticmethod
     def information_gain(features, labels):
@@ -68,4 +74,43 @@ class FeatureSelection():
         probabilities = counts / len(labels)
         entropy_value = -np.sum(probabilities * np.log2(probabilities))
         return entropy_value
+
+    @staticmethod
+    def chi_square_statistic(features, labels):
+        """Calculate Chi-square statistic for a feature in a dataset."""
+
+        chi2s = {}
+
+        for feature in features.columns:
+            contingency_table = pd.crosstab(features[feature], labels)
+            # Observed frequencies
+            observed_frequencies = contingency_table.values
+            # Chi-square statistic, p-value, degrees of freedom, and expected frequencies
+            chi2v, p, dof, expected = chi2_contingency(observed_frequencies)
+
+            chi2s[features] = chi2v
+        
+        return chi2
+
+    @staticmethod
+    def variance_threshold(features, labels):
+        selector = VarianceThreshold()
+        selector.fit(features.values)
+        choosen = selector.get_feature_names_out(features.columns)
+        return {k:1 if k in choosen else 0 for k in features.columns}
+
+    @staticmethod
+    def mutual_info_cls(features, labels):
+        infs = mutual_info_classif(features.values, labels.values)
+        return {k:v for k,v in zip(features.columns, infs)}
+
+    @staticmethod
+    def chi2_skl(features, labels):
+        stats = chi2(features.values, labels.values)
+        return {k:v for k,v in zip(features.columns, stats)}
+
+
+
+
+
 
