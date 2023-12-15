@@ -165,6 +165,8 @@ class KIBL:
         end_time = time.time()
         problem_solving_times.append(end_time - start_time)
 
+      self.predictions = predictions
+
       accuracy = self.evaluate_accuracy(predictions, true_labels)
       print('----Accuracy Completed----')
       
