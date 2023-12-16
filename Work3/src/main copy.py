@@ -4,6 +4,21 @@ from evaluation.metrics import performance_eval
 import argparse
 from KIBL import KIBL
 from instance_selection import InstanceSelection
+from utils.StatTest import Friedman_Nem
+import numpy as np
+
+# Arguments parser from terminal
+parser = argparse.ArgumentParser()
+
+parser.add_argument("-bp", "--best_params", help = "[True,False]", default=True, type=bool)
+parser.add_argument("-ds", "--datasets", nargs='+', help = "[ 'vowel', 'kr-vs-kp']", default=[ 'vowel', 'kr-vs-kp'])
+parser.add_argument("-k", "--nearest_neighbors", help = "[3, 5, 7]", default=[3,5,7], type=int)
+parser.add_argument("-vot", "--voting", nargs='+', help = "['Modified_Plurality','Borda_Count']", default=['Modified_Plurality','Borda_Count'])
+parser.add_argument("-ret", "--ret_policy", nargs='+', help = "['Never_Retain','Always_Retain']", default=['Modified_Plurality','Borda_Count'])
+parser.add_argument("-fs", "--feature_selection", help = "[True,False]", default=False, type=bool)
+parser.add_argument("-is", "--instance_selection", help = "[True,False]", default=False, type=bool)
+
+args = parser.parse_args()
 
 parameters=[]
 
@@ -32,6 +47,7 @@ iss.mcnn_algorithm()
     # print(accuracy, efficiency, total_time)
 param_selection='K:'+str(agmK)
 parameters.append(param_selection)
+
 accuracies={}
 efficiencies={}
 
@@ -48,41 +64,21 @@ for (train,test) in data:
         accuracies[parameters[0]].append(accuracy)
         efficiencies[parameters[0]].append(efficiency)
     
-    print(accuracy, efficiency, total_time)
+    print(f'Dataset: {dataset}  Fold: {i}  Acc:{accuracy}  Ef:{efficiency}' )
+    print('Data has been stored')
     
  
 print(accuracies)
 print(efficiencies)
-# for i in enumerate(data):
-#     train, test = data[i]
-#     IBL= KIBL(X=train, K=3)  
-#     accuracy, efficiency= IBL.kIBLAlgorithm(test)
-#     accuracies[parameters]=accuracy
-#     efficiencies[parameters]=efficiency
-    
-#     if 
-#     print(f'Dataset: {dataset}  Fold: {i}  Acc:{accuracy[i]}  Ef:{efficiency[i]}' )
-#     print('Data has been stored')
 
-
-# import argparse
-# import timeit
-# import numpy as np
+Acc_Matrix=Friedman_Nem(accuracies)
+Eff_Matrix= Friedman_Nem(efficiencies)
 
 
 
-# # Arguments parser from terminal
-# parser = argparse.ArgumentParser()
 
-# parser.add_argument("-bp", "--best_params", help = "[True,False]", default=True, type=bool)
-# parser.add_argument("-ds", "--datasets", nargs='+', help = "[ 'vowel', 'kr-vs-kp']", default=[ 'vowel', 'kr-vs-kp'])
-# parser.add_argument("-k", "--nearest_neighbors", help = "[3, 5, 7]", default=[3,5,7], type=int)
-# parser.add_argument("-vot", "--voting", nargs='+', help = "['Modified_Plurality','Borda_Count']", default=['Modified_Plurality','Borda_Count'])
-# parser.add_argument("-ret", "--ret_policy", nargs='+', help = "['Never_Retain','Always_Retain']", default=['Modified_Plurality','Borda_Count'])
-# parser.add_argument("-fs", "--feature_selection", help = "[True,False]", default=False, type=bool)
-# parser.add_argument("-is", "--instance_selection", help = "[True,False]", default=False, type=bool)
 
-# args = parser.parse_args()
+
 
 # # Settings
 
