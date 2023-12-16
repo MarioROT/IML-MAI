@@ -26,6 +26,8 @@ class InstanceSelection():
             closest_index = class_instances.iloc[[self.find_closest_instance(centroid, class_instances)]].index
             prototypes = pd.concat([prototypes, data.loc[closest_index]], ignore_index = True)
 
+        # prototypes = pd.read_csv('pen-based_FinalProts.csv', index_col=0)
+        i = 0
         # Step 2. Interative refinement until all instances are correctly classified
         while True:
             # Train a k-nearest neighbors classifier with the current prototypes
@@ -50,19 +52,24 @@ class InstanceSelection():
 
                 if len(class_misclassified_instances) > 0:
                     centroid = self. compute_centroid(class_misclassified_instances)
-                    closest_index = self.find_closest_instance(centroid, class_misclassified_instances)
+                    closest_index = class_misclassified_instances.iloc[[self.find_closest_instance(centroid, class_misclassified_instances)]].index
                     prototypes = pd.concat([prototypes, misclassified_instances.loc[closest_index]], ignore_index = True)
+            i += 1
+            print(f'Iteration: {i+1} - Misclassified Instances {len(misclassified_instances)}')
+
+        # prototypes = pd.read_csv('pen-based MCNN.csv')
             
         # Step 3: Deletion Operator
-        classifier = KIBL(X=prototypes, K=1)
+        classifier = KIBL(X=prototypes, K=1, store_used_neighbors=True)
         classifier.kIBLAlgorithm(data)
-        predictions = classifier.predictions
 
         # Identify prototypes that participate in classification
-        participating_prototypes = predictions.unique()
+        used_neighbors, counts = np.unique(classifier.used_neighbors, return_counts=True)
 
-        # Filter prototypes to keep only those that participate in classification
-        final_prototypes = prototypes[np.isin(np.arange(len(prototypes)), participating_prototypes)]
+        participating_prototypes = used_neighbors[counts > 1]
+
+        # Filter prototypes to keep only those that participate in classificationp.unique(classifier.used_neighbors, return_counts=True)[1]nnp.unique(classifier.used_neighbors, return_counts=True)[1A]
+        final_prototypes = prototypes.loc[participating_prototypes]
 
         return final_prototypes
 
