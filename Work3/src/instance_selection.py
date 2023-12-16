@@ -143,7 +143,7 @@ for i, fold in enumerate(TRAIN_DATASETS_PATH):
     instance_selection = InstanceSelection(data=train, k_neighbors=3)
     x_resampled, y_resampled = instance_selection.edited_nearest_neighbors()
     data_resampled = pd.concat([x_resampled, y_resampled], axis=1)
-    data_resampled.to_csv(f"data/resampled-enn/pen-based/fold{i}")
+    data_resampled.to_csv(f"../data/resampled-enn/{DATASET_NAME}/fold{i}.csv")
     print(data_resampled)
 
     end = time.time()
