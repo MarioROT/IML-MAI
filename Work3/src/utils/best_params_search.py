@@ -3,8 +3,15 @@ sys.path.append('../')
 from itertools import product
 from evaluation.metrics import params_grid_eval
 
+def BestParamsSearch(params_grid):
+    param_groups = {}
+    # Perform grid search
+    for n, params in enumerate(product(*params_grid.values())):
+        param_dict = dict(zip(params_grid.keys(), params))
+        param_groups[f'{param_dict}'] = param_dict
+    return param_groups
 
-def BestParamsSearch(method, params_grid, X, y, sort_order = ['accuracy'], data=None):
+def BestParamsSearch2(method, params_grid, X, y, sort_order = ['accuracy'], data=None):
     performance = params_grid_eval(X, y, sort_order, data[0])
     param_groups = {}
     best_params = {}
