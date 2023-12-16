@@ -1,10 +1,9 @@
-
 import timeit
 from utils.data_preprocessing import Dataset
 from evaluation.metrics import performance_eval
 import argparse
 from KIBL import KIBL
-
+from instance_selection import InstanceSelection
 
 parameters=[]
 
@@ -17,6 +16,16 @@ data = Dataset('C:/Users/52556/Desktop/Alam/ALAM UNI y otros docs/IML-MAI/Work3/
 #     for neighbors in K: 
 
 # for (train,test) in data:    
+        
+        
+train,test=data[0]
+# IBL= KIBL(X=train, K=3, weights_m = 'information_gain', k_weights = '80%')   
+# IBL= KIBL(X=train, K=3)   
+# accuracy, efficiency, total_time= IBL.kIBLAlgorithm(test)
+# print(accuracy, efficiency, total_time)
+
+iss = InstanceSelection(train, 3)
+iss.mcnn_algorithm()
     # train,test=data[0]
     # IBL= KIBL(X=train, K=3)   
     # accuracy, efficiency, total_time= IBL.kIBLAlgorithm(test)

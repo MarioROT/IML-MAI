@@ -6,7 +6,15 @@ import time
 from feature_selection import FeatureSelection
 
 class KIBL:
-    def __init__(self, X=None, K=3, voting='MP', retention='NR', weights_m = 'ones', k_weights = 'nonzero', normalize=False):
+    def __init__(self, 
+                 X=None, 
+                 K=3, 
+                 voting='MP', 
+                 retention='NR', 
+                 weights_m = 'ones', 
+                 k_weights = 'nonzero', 
+                 normalize=False,
+                 store_used_neighbors = False):
         print("-------Performing K-IBL-------")
         self.X=X
         self.K=K
@@ -15,6 +23,7 @@ class KIBL:
         self.weights_m = weights_m
         self.k_weights = k_weights
         self.normalize=normalize
+        self.store_used_neighbors = store_used_neighbors
         
     #Normalizing the train data
     def normalize(self,X):
@@ -41,12 +50,14 @@ class KIBL:
     def get_neighbors(self, train, test_row):
       distances = []
       
-      for train_row in train.values:
+      for i, train_row in enumerate(train.values):
           x_train=train_row[:-1]
           dist = self.euc_distance(test_row[:-1], x_train)
-          distances.append((train_row, dist))
+          distances.append((train_row, dist, i))
       distances.sort(key=lambda tup: tup[1])
       neighbors = np.array(distances[:self.K],dtype=object)[:,0]
+      if self.store_used_neighbors:
+         self.used_neighbors.append(np.array(distances[:self.K], dtype=object)[:, 2])
       
       return neighbors
     
@@ -109,68 +120,68 @@ class KIBL:
 
 
     def kIBLAlgorithm(self, test_data):
-      if self.normalize==True:
-        data_normalized=self.normalize(np.vstack([self.X, test_data]))
-        train_normalized=data_normalized[:self.X.shape[0]]
-        test_normalized=data_normalized[-test_data.shape[0]:]
-        
-      else:
-         train_normalized=self.X
-         test_normalized=test_data
+        self.used_neighbors = [] if self.store_used_neighbors else False
+
+        if self.normalize==True:
+            data_normalized=self.normalize(np.vstack([self.X, test_data]))
+            train_normalized=data_normalized[:self.X.shape[0]]
+            test_normalized=data_normalized[-test_data.shape[0]:]
+        else:
+            train_normalized=self.X
+            test_normalized=test_data
          
-      print('----Data normalized----')  
+        print('----Data normalized----')  
 
-      self.weights = self.compute_weights(train_normalized, self.weights_m)
+        self.weights = self.compute_weights(train_normalized, self.weights_m)
 
-      true_labels = test_normalized.iloc[:,-1]
-      predictions=[]
-      problem_solving_times = []
-      start_total_time=time.time()
-      for i,instance in enumerate(test_normalized.values): 
-        if i%1000==0:
-          print(f'iteration:{i}')
-        start_time = time.time()
-        neighbors=self.get_neighbors(train_normalized, instance)
-        predict=self.predict(neighbors)
-        predictions.append(predict)
+        true_labels = test_normalized.iloc[:,-1]
+        predictions=[]
+        problem_solving_times = []
+        start_total_time=time.time()
+        for i,instance in enumerate(test_normalized.values): 
+            if i%1000==0:
+                print(f'iteration:{i}')
+            start_time = time.time()
+            neighbors=self.get_neighbors(train_normalized, instance)
+            predict=self.predict(neighbors)
+            predictions.append(predict)
 
-        if self.retention == 'NR':
-          retained_instance = None
-
-        elif self.retention == 'AR':
-          retained_instance = instance
-
-        elif self.retention == 'DF':
-          if instance[-1] != predict:
-            retained_instance = instance
-          else:
-            return None
-
-        elif self.retention == 'DD':
-          neighbors_labels = [row[-1] for row in neighbors]
-          neighbour_class, counts=np.unique(neighbors_labels,  return_counts=True)
-          majority_cases=max(counts)
-          dd=(self.K-majority_cases)/((len(neighbour_class)-1)*majority_cases)
+            if self.retention == 'NR':
+                retained_instance = None
+            elif self.retention == 'AR':
+                retained_instance = instance
+            elif self.retention == 'DF':
+                if instance[-1] != predict:
+                    retained_instance = instance
+                else:
+                    return None
+            elif self.retention == 'DD':
+                neighbors_labels = [row[-1] for row in neighbors]
+                neighbour_class, counts=np.unique(neighbors_labels,  return_counts=True)
+                majority_cases=max(counts)
+                dd=(self.K-majority_cases)/((len(neighbour_class)-1)*majority_cases)
           
-          if dd>=0.5: 
-            retained_instance = instance
+                if dd>=0.5: 
+                    retained_instance = instance
+                else:
+                    return None
+      
+            if retained_instance is not None:
+                self.X = np.vstack([self.X, retained_instance])
+                train_normalized = np.vstack([train_normalized, retained_instance])
             
-          else:
-            return None
-      
-        if retained_instance is not None:
-          self.X = np.vstack([self.X, retained_instance])
-          train_normalized = np.vstack([train_normalized, retained_instance])
-        
-        end_time = time.time()
-        problem_solving_times.append(end_time - start_time)
+            end_time = time.time()
+            problem_solving_times.append(end_time - start_time)
 
-      accuracy = self.evaluate_accuracy(predictions, true_labels)
-      print('----Accuracy Completed----')
-      
-      efficiency = self.evaluate_efficiency(problem_solving_times)
-      print('----Efficiency Completed----')
-      end_total_time=time.time()
-      total_time= end_total_time-start_total_time
-      
-      return accuracy, efficiency, total_time         
+        self.predictions = predictions
+        # self.used_neighbors = np.unique(self.used_neighbors)
+
+        accuracy = self.evaluate_accuracy(predictions, true_labels)
+        print('----Accuracy Completed----')
+
+        efficiency = self.evaluate_efficiency(problem_solving_times)
+        print('----Efficiency Completed----')
+        end_total_time=time.time()
+        total_time= end_total_time-start_total_time
+
+        return accuracy, efficiency, total_time         
