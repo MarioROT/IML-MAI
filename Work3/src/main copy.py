@@ -19,12 +19,12 @@ data = Dataset('../data/folded/Nueva carpeta/pen-based', cat_transf='onehot', fo
         
 train,test=data[0]
 # IBL= KIBL(X=train, K=3, weights_m = 'information_gain', k_weights = '80%')   
-IBL= KIBL(X=train, K=3)   
-accuracy, efficiency, total_time= IBL.kIBLAlgorithm(test)
-print(accuracy, efficiency, total_time)
+# IBL= KIBL(X=train, K=3)   
+# accuracy, efficiency, total_time= IBL.kIBLAlgorithm(test)
+# print(accuracy, efficiency, total_time)
 
-# iss = InstanceSelection(train, 3)
-# iss.mcnn_algorithm()
+iss = InstanceSelection(train, 3)
+iss.mcnn_algorithm()
 
 
 # import argparse
