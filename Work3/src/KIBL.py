@@ -26,7 +26,7 @@ class KIBL:
         self.store_used_neighbors = store_used_neighbors
         
     #Normalizing the train data
-    def normalize(self,X):
+    def normalize_fun(self,X):
       data_normalized=pd.DataFrame(X)
       for column in data_normalized.columns:
         if is_numeric_dtype(data_normalized[column]):
@@ -123,7 +123,7 @@ class KIBL:
         self.used_neighbors = [] if self.store_used_neighbors else False
 
         if self.normalize==True:
-            data_normalized=self.normalize(np.vstack([self.X, test_data]))
+            data_normalized=self.normalize_fun(np.vstack([self.X, test_data]))
             train_normalized=data_normalized[:self.X.shape[0]]
             test_normalized=data_normalized[-test_data.shape[0]:]
         else:
