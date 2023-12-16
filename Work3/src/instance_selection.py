@@ -132,29 +132,29 @@ class InstanceSelection():
 
 
 
-DATASET_NAME = "pen-based"
-TRAIN_DATASETS_PATH = []
-for fold in range(0, 10):
-    TRAIN_DATASETS_PATH.append(f'../data/folded/{DATASET_NAME}/{DATASET_NAME}.fold.00000{fold}.train.arff')
+# DATASET_NAME = "pen-based"
+# TRAIN_DATASETS_PATH = []
+# for fold in range(0, 10):
+#     TRAIN_DATASETS_PATH.append(f'../data/folded/{DATASET_NAME}/{DATASET_NAME}.fold.00000{fold}.train.arff')
 
-print(TRAIN_DATASETS_PATH)
+# print(TRAIN_DATASETS_PATH)
 
-print(f"Dataset {DATASET_NAME}")
-for i, fold in enumerate(TRAIN_DATASETS_PATH):
-    print(f"------------fold{i}------------------")
-    data = Dataset(fold)
-    train = data.processed_data
-    print(train)
+# print(f"Dataset {DATASET_NAME}")
+# for i, fold in enumerate(TRAIN_DATASETS_PATH):
+#     print(f"------------fold{i}------------------")
+#     data = Dataset(fold)
+#     train = data.processed_data
+#     print(train)
 
-    start = time.time()
-    instance_selection = InstanceSelection(data=train, k_neighbors=3)
-    x_resampled, y_resampled = instance_selection.edited_nearest_neighbors()
-    data_resampled = pd.concat([x_resampled, y_resampled], axis=1)
-    data_resampled.to_csv(f"../data/resampled-enn/{DATASET_NAME}/fold{i}.csv")
-    print(data_resampled)
+#     start = time.time()
+#     instance_selection = InstanceSelection(data=train, k_neighbors=3)
+#     x_resampled, y_resampled = instance_selection.edited_nearest_neighbors()
+#     data_resampled = pd.concat([x_resampled, y_resampled], axis=1)
+#     data_resampled.to_csv(f"../data/resampled-enn/{DATASET_NAME}/fold{i}.csv")
+#     print(data_resampled)
 
-    end = time.time()
+#     end = time.time()
 
-    print(f"execution time: {(end-start)/60} min")
+#     print(f"execution time: {(end-start)/60} min")
 
 

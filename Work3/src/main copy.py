@@ -6,23 +6,24 @@ from KIBL import KIBL
 from instance_selection import InstanceSelection
 from utils.StatTest import Friedman_Nem
 import numpy as np
+import pandas as pd
 
 # Arguments parser from terminal
-parser = argparse.ArgumentParser()
+# parser = argparse.ArgumentParser()
 
-parser.add_argument("-bp", "--best_params", help = "[True,False]", default=True, type=bool)
-parser.add_argument("-ds", "--datasets", nargs='+', help = "[ 'vowel', 'kr-vs-kp']", default=[ 'vowel', 'kr-vs-kp'])
-parser.add_argument("-k", "--nearest_neighbors", help = "[3, 5, 7]", default=[3,5,7], type=int)
-parser.add_argument("-vot", "--voting", nargs='+', help = "['Modified_Plurality','Borda_Count']", default=['Modified_Plurality','Borda_Count'])
-parser.add_argument("-ret", "--ret_policy", nargs='+', help = "['Never_Retain','Always_Retain']", default=['Modified_Plurality','Borda_Count'])
-parser.add_argument("-fs", "--feature_selection", help = "[True,False]", default=False, type=bool)
-parser.add_argument("-is", "--instance_selection", help = "[True,False]", default=False, type=bool)
+# parser.add_argument("-bp", "--best_params", help = "[True,False]", default=True, type=bool)
+# parser.add_argument("-ds", "--datasets", nargs='+', help = "[ 'vowel', 'kr-vs-kp']", default=[ 'vowel', 'kr-vs-kp'])
+# parser.add_argument("-k", "--nearest_neighbors", help = "[3, 5, 7]", default=[3,5,7], type=int)
+# parser.add_argument("-vot", "--voting", nargs='+', help = "['Modified_Plurality','Borda_Count']", default=['Modified_Plurality','Borda_Count'])
+# parser.add_argument("-ret", "--ret_policy", nargs='+', help = "['Never_Retain','Always_Retain']", default=['Modified_Plurality','Borda_Count'])
+# parser.add_argument("-fs", "--feature_selection", help = "[True,False]", default=False, type=bool)
+# parser.add_argument("-is", "--instance_selection", help = "[True,False]", default=False, type=bool)
 
-args = parser.parse_args()
+# args = parser.parse_args()
 
-parameters=[]
+# parameters=[]
 
-data = Dataset('C:/Users/52556/Desktop/Alam/ALAM UNI y otros docs/IML-MAI/Work3/data/folded/Nueva carpeta/pen-based', cat_transf='onehot', folds=True)
+data = Dataset('../data/Dummy/', cat_transf='onehot', folds=True)
 
 #     K=[3,5,7]
 #     Voting=['MP','BC']
@@ -33,7 +34,8 @@ data = Dataset('C:/Users/52556/Desktop/Alam/ALAM UNI y otros docs/IML-MAI/Work3/
 # for (train,test) in data:    
         
         
-train,test=data[0]
+# train,test=data[0]
+train, test = pd.read_csv('../data/Dummy/eq_pen-based_300_train.csv'), pd.read_csv('../data/Dummy/eq_pen-based_80_test.csv')
 # IBL= KIBL(X=train, K=3, weights_m = 'information_gain', k_weights = '80%')   
 # IBL= KIBL(X=train, K=3)   
 # accuracy, efficiency, total_time= IBL.kIBLAlgorithm(test)
@@ -41,38 +43,40 @@ train,test=data[0]
 
 iss = InstanceSelection(train, 3)
 iss.mcnn_algorithm()
+
+
     # train,test=data[0]
     # IBL= KIBL(X=train, K=3)   
     # accuracy, efficiency, total_time= IBL.kIBLAlgorithm(test)
     # print(accuracy, efficiency, total_time)
-param_selection='K:'+str(agmK)
-parameters.append(param_selection)
+# param_selection='K:'+str(agmK)
+# parameters.append(param_selection)
 
-accuracies={}
-efficiencies={}
+# accuracies={}
+# efficiencies={}
 
-data = Dataset('C:/Users/52556/Desktop/Alam/ALAM UNI y otros docs/IML-MAI/Work3/data/folded/Nueva carpeta/pen-based', cat_transf='onehot', folds=True)
+# data = Dataset('C:/Users/52556/Desktop/Alam/ALAM UNI y otros docs/IML-MAI/Work3/data/folded/Nueva carpeta/pen-based', cat_transf='onehot', folds=True)
 
-for (train,test) in data:   
-    IBL= KIBL(X=train, K=3)   
-    accuracy, efficiency, total_time= IBL.kIBLAlgorithm(test)
-    
-    if not parameters[0] in accuracies.keys():
-        accuracies[parameters[0]]=[accuracy]
-        efficiencies[parameters[0]]=[efficiency]
-    else:
-        accuracies[parameters[0]].append(accuracy)
-        efficiencies[parameters[0]].append(efficiency)
-    
-    print(f'Dataset: {dataset}  Fold: {i}  Acc:{accuracy}  Ef:{efficiency}' )
-    print('Data has been stored')
-    
- 
-print(accuracies)
-print(efficiencies)
+# for (train,test) in data:   
+#     IBL= KIBL(X=train, K=3)   
+#     accuracy, efficiency, total_time= IBL.kIBLAlgorithm(test)
+#     
+#     if not parameters[0] in accuracies.keys():
+#         accuracies[parameters[0]]=[accuracy]
+#         efficiencies[parameters[0]]=[efficiency]
+#     else:
+#         accuracies[parameters[0]].append(accuracy)
+#         efficiencies[parameters[0]].append(efficiency)
+#     
+#     print(f'Dataset: {dataset}  Fold: {i}  Acc:{accuracy}  Ef:{efficiency}' )
+#     print('Data has been stored')
+#     
+#  
+# print(accuracies)
+# print(efficiencies)
 
-Acc_Matrix=Friedman_Nem(accuracies)
-Eff_Matrix= Friedman_Nem(efficiencies)
+# Acc_Matrix=Friedman_Nem(accuracies)
+# Eff_Matrix= Friedman_Nem(efficiencies)
 
 
 
