@@ -26,7 +26,8 @@ class Dataset():
                  method: str = 'numerical',
                  cat_transf: str = 'onehot', 
                  num_scaler: str ='Minmax',
-                 folds: bool = False):
+                 folds: bool = False,
+                 verbose: int = 1):
         self.data_path = Path(data_path)
         self.wmean = with_mean
         self.wstd = with_std
@@ -40,6 +41,7 @@ class Dataset():
         self.y_true = None
         self.processed_data = None
         self.classes_relation = None
+        self.verbose = verbose
 
         if not self.folds:
             self.preprocessing()
@@ -68,7 +70,8 @@ class Dataset():
         return self.raw_data, self.metadata
 
     def preprocessing(self):
-        print(f'---Preprocessing {self.data_path.name} dataset---')
+        if self.verbose > 0:
+            print(f'---Preprocessing {self.data_path.name} dataset---')
         self.df, meta = self.import_raw_dataset()
         num_samples_initial, num_features_initial = self.df.shape
         self.y_true = self.get_predicted_value(self.df)
@@ -82,8 +85,9 @@ class Dataset():
         self.processed_data = self.standardization(self.df, self.method, self.cat_transf, self.wmean, self.wstd, len(self.y_true.unique()),self.num_scaler)
         num_samples_final, num_features_final = self.processed_data.shape
         self.processed_data['y_true'] = self.encode_labels(self.y_true, self.classes_relation)
-        print(f"Initial Dataset: {num_samples_initial} samples, {num_features_initial} features")
-        print(f"Final Dataset: {num_samples_final} samples, {num_features_final} features")
+        if self.verbose > 1:
+            print(f"Initial Dataset: {num_samples_initial} samples, {num_features_initial} features")
+            print(f"Final Dataset: {num_samples_final} samples, {num_features_final} features")
         return self.processed_data
 
     def save(self, filename, dir = ''):
@@ -197,6 +201,6 @@ class Dataset():
         processed_df = pd.DataFrame(X_trans, columns=columns)
         return processed_df
 
-if __name__ == '__main__':
-    data_path = Path('../data/raw/iris.csv')
-    dataset = Dataset(data_path)
+# if __name__ == '__main__':
+#     data_path = Path('../data/raw/iris.csv')
+#     dataset = Dataset(data_path)

@@ -1,8 +1,11 @@
+from collections import Counter
+
 import numpy as np
 import pandas as pd
 from KIBL import KIBL
 from utils.data_preprocessing import Dataset
 import time
+from sklearn.metrics import euclidean_distances
 
 class InstanceSelection():
     def __init__(self,
@@ -82,41 +85,28 @@ class InstanceSelection():
         # Step 1: Train a K-IBL model
         kibl_instance.kIBLAlgorithm(self.data)
 
-        # Step 2: Identify misclassified instances
-        y_pred = kibl_instance.predictions
-        misclassified_indices = [i for i in range(len(y)) if y[i] != y_pred[i]]
+        # Step 2: Identify instances with different predicted class than the majority of their k-nearest neighbors
+        to_remove = []
 
-        # Step 3: Remove misclassified instances
-        X_resampled = np.delete(X, misclassified_indices, axis=0)
-        y_resampled = np.delete(y, misclassified_indices)
+        for i in range(self.data.shape[0]):  # Iterate over instances in the original data
+            instance = self.data.iloc[i]
+            neighbors = kibl_instance.get_neighbors(self.data, instance)
 
-        X_resampled = pd.DataFrame(X_resampled)
-        y_resampled = pd.DataFrame(y_resampled)
+            # Check if the predicted class is different from the majority class in the neighbors
+            neighbors_labels = [row[-1] for row in neighbors]
+            majority_class = Counter(neighbors_labels).most_common(1)[0][0]
+            predicted_class = kibl_instance.predict(neighbors)
+            if predicted_class != majority_class:
+                to_remove.append(i)
 
-        return X_resampled, y_resampled
+        # Step 3: Remove instances with different predicted class
+        data_resampled = np.delete(X, to_remove, axis=0)
+        labels_resampled = np.delete(y, to_remove)
 
-    """
-    def edited_nearest_neighbors2(train_data, k=3):  # funciona
-        X = train_data.iloc[:, :-1].values
-        y = train_data.iloc[:, -1].values
-
-        # Step 1: Train a K-Nearest Neighbors model
-        knn = KNeighborsClassifier(n_neighbors=k)
-        knn.fit(X, y)
-
-        # Step 2: Identify misclassified instances
-        y_pred = knn.predict(X)
-        misclassified_indices = [i for i in range(len(y)) if y[i] != y_pred[i]]
-
-        # Step 3: Remove misclassified instances
-        X_resampled = [X[i] for i in range(len(X)) if i not in misclassified_indices]
-        y_resampled = [y[i] for i in range(len(y)) if i not in misclassified_indices]
-
-        X_resampled = pd.DataFrame(X_resampled)
-        y_resampled = pd.DataFrame(y_resampled)
+        X_resampled = pd.DataFrame(data_resampled, columns=self.data.columns[:-1])
+        y_resampled = pd.Series(labels_resampled, name=self.data.columns[-1])
 
         return X_resampled, y_resampled
-        """
         
 
     def compute_centroid(self, X):

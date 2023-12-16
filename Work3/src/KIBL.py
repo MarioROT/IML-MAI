@@ -80,7 +80,7 @@ class KIBL:
         return prediction
         
       elif self.voting == 'BC':  
-        points=np.arange(length, 0,-1, dtype=int)
+        points=np.arange(length-1, -1,-1, dtype=int)
         values_array=np.array(neighbors_labels)
         scores={}
 
@@ -96,7 +96,7 @@ class KIBL:
           return max_point_class[0]
         
         else:
-          return next(label for label in values if label in max_point_class)
+          return next(label for label in values_array if label in max_point_class)
 
     def compute_weights(self, data, method):
         features = data.loc[:, data.columns != 'y_true']
@@ -154,7 +154,7 @@ class KIBL:
                 if instance[-1] != predict:
                     retained_instance = instance
                 else:
-                    return None
+                    retained_instance = None
             elif self.retention == 'DD':
                 neighbors_labels = [row[-1] for row in neighbors]
                 neighbour_class, counts=np.unique(neighbors_labels,  return_counts=True)
@@ -164,12 +164,13 @@ class KIBL:
                 if dd>=0.5: 
                     retained_instance = instance
                 else:
-                    return None
+                    retained_instance = None
       
             if retained_instance is not None:
-                self.X = np.vstack([self.X, retained_instance])
-                train_normalized = np.vstack([train_normalized, retained_instance])
-            
+                # self.X = np.vstack([self.X, retained_instance])   
+                self.X=pd.concat([self.X,pd.DataFrame(retained_instance.reshape(1,-1),columns=self.X.columns)],ignore_index=True)
+                # train_normalized = np.vstack([train_normalized, retained_instance])
+                train_normalized=pd.concat([train_normalized,pd.DataFrame(retained_instance.reshape(1,-1),columns=train_normalized.columns)],ignore_index=True)
             end_time = time.time()
             problem_solving_times.append(end_time - start_time)
 

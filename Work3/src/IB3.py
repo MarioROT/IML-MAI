@@ -33,13 +33,6 @@ class IB3:
 
             self.S = [s for s in self.S if self.is_acceptable(s)]
 
-    def predict(self, X):
-        predictions = []
-        for instance in X:
-            nearest_instance, nearest_label = self.find_nearest_acceptable_instance(instance)
-            predictions.append(nearest_label)
-        return predictions
-
     def find_nearest_acceptable_instance(self, instance):
         if not self.S:
             return None, None
@@ -89,7 +82,6 @@ class IB3:
 def preprocess_with_IB3(X, y):
     ib3 = IB3()
     ib3.fit(X, y)
-    #ib3.remove_low_confidence_instances()
     X_refined, y_refined = zip(*[(s['instance'], s['label']) for s in ib3.S])
     return np.array(X_refined), np.array(y_refined)
 
