@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from KIBL import KIBL
 from utils.data_preprocessing import Dataset
+import time
 
 class InstanceSelection():
     def __init__(self,
@@ -69,7 +70,7 @@ class InstanceSelection():
         X = self.data.iloc[:, :-1].values
         y = self.data.iloc[:, -1].values
 
-        kibl_instance = KIBL(X=self.data, K=self.k_neighbors, normalize=False)
+        kibl_instance = KIBL(X=self.data, K=self.k_neighbors)
 
         # Step 1: Train a K-IBL model
         kibl_instance.kIBLAlgorithm(self.data)
@@ -121,26 +122,32 @@ class InstanceSelection():
         closest_index = np.argmin(distances)
         return closest_index
 
-    def euclidean_distance(self, x1, x2):
-        return np.sqrt(np.sum((x1 - x2) ** 2))
-
-    def get_neighbors(self, train_data, test_instance, k):
-        distances = []
-        for i, train_instance in enumerate(train_data):
-            dist = self.euclidean_distance(test_instance, train_instance)
-            distances.append((i, dist))
-        distances.sort(key=lambda x: x[1])
-        neighbors_indices = [i for i, _ in distances[:k]]
-        return neighbors_indices
 
 
 
+DATASET_NAME = "pen-based"
+TRAIN_DATASETS_PATH = []
+for fold in range(0, 10):
+    TRAIN_DATASETS_PATH.append(f'../data/folded/{DATASET_NAME}/{DATASET_NAME}.fold.00000{fold}.train.arff')
 
-data = Dataset('../data/folded/Nueva carpeta/pen-based', cat_transf='onehot', folds=True)
-train, test = data[0]
+print(TRAIN_DATASETS_PATH)
 
-instance_selection = InstanceSelection(data=train, k_neighbors=3)
-x_resampled = instance_selection.edited_nearest_neighbors()
+print(f"Dataset {DATASET_NAME}")
+for i, fold in enumerate(TRAIN_DATASETS_PATH):
+    print(f"------------fold{i}------------------")
+    data = Dataset(fold)
+    train = data.processed_data
+    print(train)
 
+    start = time.time()
+    instance_selection = InstanceSelection(data=train, k_neighbors=3)
+    x_resampled, y_resampled = instance_selection.edited_nearest_neighbors()
+    data_resampled = pd.concat([x_resampled, y_resampled], axis=1)
+    data_resampled.to_csv(f"data/resampled-enn/pen-based/fold{i}")
+    print(data_resampled)
+
+    end = time.time()
+
+    print(f"execution time: {(end-start)/60} min")
 
 
