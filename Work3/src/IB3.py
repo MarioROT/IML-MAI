@@ -89,6 +89,7 @@ class IB3:
 def preprocess_with_IB3(X, y):
     ib3 = IB3()
     ib3.fit(X, y)
+    #ib3.remove_low_confidence_instances()
     X_refined, y_refined = zip(*[(s['instance'], s['label']) for s in ib3.S])
     return np.array(X_refined), np.array(y_refined)
 
@@ -101,24 +102,17 @@ train, test = data[0]
 # Separate features and labels
 X_train, y_train = train.iloc[:, :-1], train.iloc[:, -1]
 X_test, y_test = test.iloc[:, :-1], test.iloc[:, -1]
-print("X_train",X_train)
-# Apply this to your dataset
+
 X_refined, y_refined = preprocess_with_IB3(X_train.values, y_train.values)
 
-print("X_refined",X_refined)
+refined = pd.DataFrame(X_refined, columns=train.columns[:-1])
 
-# Initialize and train the IB3 model
-#ib3 = IB3()
-#ib3.fit(X_train.values, y_train.values)
+# Add y_refined as the last column to this DataFrame
+# This column should have the same name as the last column of the 'train' DataFrame
+refined[train.columns[-1]] = y_refined
+# Train with original data
+kibl_baseline = KIBL(X=refined)
 
-# Remove low confidence instances
-#ib3.remove_low_confidence_instances()
-
-# Make predictions on the test set
-#predictions = ib3.predict(X_test.values)
-#print("predictions",predictions)
-
-
-
-
-
+# Test on the test set
+predictions_baseline = kibl_baseline.kIBLAlgorithm(test)
+print(predictions_baseline)
