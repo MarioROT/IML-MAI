@@ -32,14 +32,16 @@ data = Dataset('../data/Dummy/', cat_transf='onehot', folds=True)
         
         
 # train,test=data[0]
-train, test = pd.read_csv('../data/Dummy/eq_pen-based_300_train.csv'), pd.read_csv('../data/Dummy/eq_pen-based_80_test.csv')
+train, test = pd.read_csv('../data/Dummy/eq_pen-based_300_train.csv', index_col=0), pd.read_csv('../data/Dummy/eq_pen-based_80_test.csv', index_col=0)
 # IBL= KIBL(X=train, K=3, weights_m = 'information_gain', k_weights = '80%')   
 # IBL= KIBL(X=train, K=3)   
 # accuracy, efficiency, total_time= IBL.kIBLAlgorithm(test)
 # print(accuracy, efficiency, total_time)
 
 iss = InstanceSelection(train, 3)
-iss.mcnn_algorithm()
+finalP = iss.mcnn_algorithm()
+
+print(f'Lenght final prototypes: {finalP}')
 
 
     # train,test=data[0]

@@ -79,11 +79,20 @@ class IB3:
 
 
 
-def preprocess_with_IB3(X, y):
+def preprocess_with_IB3(data, k):    
+    X, y = data.iloc[:, :-1], data.iloc[:, -1]
     ib3 = IB3()
-    ib3.fit(X, y)
+    ib3.fit(X.values, y.values)
     X_refined, y_refined = zip(*[(s['instance'], s['label']) for s in ib3.S])
-    return np.array(X_refined), np.array(y_refined)
+    
+    data_refined = pd.DataFrame(np.vstack([x.T,y]).T, columns = data.columns)
+    return data_refined
+
+# def preprocess_with_IB3(X, y):
+#     ib3 = IB3()
+#     ib3.fit(X, y)
+#     X_refined, y_refined = zip(*[(s['instance'], s['label']) for s in ib3.S])
+#     return np.array(X_refined), np.array(y_refined)
 
 
 # Load data
@@ -95,7 +104,11 @@ train, test = data[0]
 X_train, y_train = train.iloc[:, :-1], train.iloc[:, -1]
 X_test, y_test = test.iloc[:, :-1], test.iloc[:, -1]
 
-X_refined, y_refined = preprocess_with_IB3(X_train.values, y_train.values)
+# X_refined, y_refined = preprocess_with_IB3(X_train.values, y_train.values)
+data_refined = preprocess_with_IB3(train, '')
+
+X_refined = data_refined.loc[:, data.columns != 'y_true']
+y_refined= data_redined.loc[:,'y_true']
 
 refined = pd.DataFrame(X_refined, columns=train.columns[:-1])
 
