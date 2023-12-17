@@ -139,8 +139,10 @@ class KIBL:
             neighbors = self.get_neighbors(train_data.drop(index=i), instance)
             neighbor_labels = [row[-1] for row in neighbors]
 
-            # Check if the instance's label is the majority label among its neighbors
-            if Counter(neighbor_labels).most_common(1)[0][0] == instance[-1]:
+            # Check if the predicted class is different from the majority class in the neighbors
+            majority_class = Counter(neighbor_labels).most_common(1)[0][0]
+            predicted_class = self.predict(neighbors)
+            if predicted_class == majority_class:
                 new_train_data.append(instance)
 
         return pd.DataFrame(new_train_data, columns=train_data.columns)
@@ -172,7 +174,7 @@ class KIBL:
             print("ENN")
             train_normalized = self.enn(train_normalized)
             print(train_normalized.shape)
-            train_normalized.to_csv(f"../data/resampled-enn-isKIBL/{DATASET_NAME}/fold{fold}.csv")
+            train_normalized.to_csv(f"../data/resampled-enn-isKIBL-/{DATASET_NAME}/fold{fold}.csv")
             return 0, 0, 0
 
 
@@ -257,7 +259,7 @@ kibl = KIBL(X=train, K=3, is_method="ENN")
 accuracy, efficiency, total_time = kibl.kIBLAlgorithm(test)
 
 """
-DATASET_NAME = "pen-based"
+DATASET_NAME = "vowel"
 TRAIN_DATASETS_PATH = []
 TEST_DATASETS_PATH = []
 
