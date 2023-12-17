@@ -45,7 +45,7 @@ save_in = f'Work3/results/Experiment_{agm}_{name_date}/'
 os.mkdir(save_in)
 
 for k,params in parameters.items():
-    data = Dataset(f"../data/folded/{params['ds']}",cat_transf='ordinal', folds=True)
+    data = Dataset(f"C:/Users/52556/Desktop/Alam/ALAM UNI y otros docs/IML-MAI/Work3/data/folded/{params['ds']}",cat_transf='ordinal', folds=True)
     for i, (train, test) in enumerate(data):
         if 'ds' in params.keys():
             params.pop('ds')
