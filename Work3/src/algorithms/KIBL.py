@@ -1,9 +1,9 @@
+import time
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
-from collections import Counter
-import time
 from feature_selection import FeatureSelection
+from instance_selection import InstanceSelection
 
 class KIBL:
     def __init__(self, 
@@ -11,8 +11,9 @@ class KIBL:
                  K=3, 
                  voting='MP', 
                  retention='NR', 
-                 weights_m = 'ones', 
-                 k_weights = 'nonzero', 
+                 feature_selection = 'ones', 
+                 k_fs = 'nonzero',
+                 instance_selection = 'None'
                  normalize=False,
                  store_used_neighbors = False):
         print("-------Performing K-IBL-------")
@@ -20,96 +21,85 @@ class KIBL:
         self.K=K
         self.voting=voting  #MP: Modified Plurality , BC: Borda Count 
         self.retention=retention #NR: Never Retains, . Always retain (AR) Different Class retention (DF). Degree of Disagreement (DD).
-        self.weights_m = weights_m
-        self.k_weights = k_weights
+        self.weights_m = feature_selection
+        self.k_weights = k_fs
+        self.instance_selection = instance_selection
         self.normalize=normalize
         self.store_used_neighbors = store_used_neighbors
         
     #Normalizing the train data
     def normalize_fun(self,X):
-      data_normalized=pd.DataFrame(X)
-      for column in data_normalized.columns:
-        if is_numeric_dtype(data_normalized[column]):
-          values=data_normalized[column].values
-          min_v=values.min()
-          max_v=values.max()
+        data_normalized=pd.DataFrame(X)
+        for column in data_normalized.columns:
+            if is_numeric_dtype(data_normalized[column]):
+                values=data_normalized[column].values
+                min_v=values.min()
+                max_v=values.max()
 
-          for i in range(len(data_normalized[column])):
-            value=data_normalized.loc[i,column]
-            new_v=(value-min_v)/(max_v-min_v)
-            data_normalized.loc[i,column]=new_v
+                for i in range(len(data_normalized[column])):
+                    value=data_normalized.loc[i,column]
+                    new_v=(value-min_v)/(max_v-min_v)
+                    data_normalized.loc[i,column]=new_v
 
       return data_normalized
 
     #Calculating the euc distance between two instances
     def euc_distance(self, test_row, train_row):
-      dist = np.sum(self.weights * ((test_row-train_row)**2))
-      return np.sqrt(dist)
+        dist = np.sum(self.weights * ((test_row-train_row)**2))
+        return np.sqrt(dist)
 
     #Getting the K nearest neighbors with all the data from the learning base
     def get_neighbors(self, train, test_row):
-      distances = []
-      
-      for i, train_row in enumerate(train.values):
-          x_train=train_row[:-1]
-          dist = self.euc_distance(test_row[:-1], x_train)
-          distances.append((train_row, dist, i))
-      distances.sort(key=lambda tup: tup[1])
-      neighbors = np.array(distances[:self.K],dtype=object)[:,0]
-      if self.store_used_neighbors:
-         self.used_neighbors.append(np.array(distances[:self.K], dtype=object)[:, 2])
-      
+        distances = []
+        for i, train_row in enumerate(train.values):
+            x_train=train_row[:-1]
+            dist = self.euc_distance(test_row[:-1], x_train)
+            distances.append((train_row, dist, i))
+        distances.sort(key=lambda tup: tup[1])
+        neighbors = np.array(distances[:self.K],dtype=object)[:,0]
+        if self.store_used_neighbors:
+             self.used_neighbors.append(np.array(distances[:self.K], dtype=object)[:, 2])
       return neighbors
     
     #Predict the type according to the majority of neighbors
     def predict(self, neighbors):
-      neighbors_labels = [row[-1] for row in neighbors]
-      neighbour_class, counts=np.unique(neighbors_labels,  return_counts=True)
-      length=len(neighbors_labels)
+        neighbors_labels = [row[-1] for row in neighbors]
+        neighbour_class, counts=np.unique(neighbors_labels,  return_counts=True)
+        length=len(neighbors_labels)
 
-      if self.voting =='MP':
-        if np.count_nonzero(counts==counts.max())==1:
-          prediction = max(set(neighbors_labels), key=neighbors_labels.count)
+        if self.voting =='MP':
+            if np.count_nonzero(counts==counts.max())==1:
+                prediction = max(set(neighbors_labels), key=neighbors_labels.count)
+            else:
+                while np.count_nonzero(counts==counts.max())>1:
+                    neighbors_labels=neighbors_labels[:-1]
+                    neighbour_class, counts=np.unique(neighbors_labels,  return_counts=True)
+                prediction = max(set(neighbors_labels), key=neighbors_labels.count)
+            return prediction
+            
+        elif self.voting == 'BC':  
+            points=np.arange(length-1, -1,-1, dtype=int)
+            values_array=np.array(neighbors_labels)
+            scores={}
 
-        else:
-          while np.count_nonzero(counts==counts.max())>1:
-            neighbors_labels=neighbors_labels[:-1]
-            neighbour_class, counts=np.unique(neighbors_labels,  return_counts=True)
-          prediction = max(set(neighbors_labels), key=neighbors_labels.count)
+            for label in set(values_array):
+                labels=np.where(values_array==label,1,0)
+                score=np.dot(labels,points)
+                scores[label]=score
 
-        return prediction
+            max_points = max(scores.values())
+            max_point_class = [label for label, points in scores.items() if points == max_points]
         
-      elif self.voting == 'BC':  
-        points=np.arange(length-1, -1,-1, dtype=int)
-        values_array=np.array(neighbors_labels)
-        scores={}
-
-        for label in set(values_array):
-          labels=np.where(values_array==label,1,0)
-          score=np.dot(labels,points)
-          scores[label]=score
-
-        max_points = max(scores.values())
-        max_point_class = [label for label, points in scores.items() if points == max_points]
-    
-        if len(max_point_class)==1:
-          return max_point_class[0]
-        
-        else:
-          return next(label for label in values_array if label in max_point_class)
+            if len(max_point_class)==1:
+                return max_point_class[0]
+            else:
+                return next(label for label in values_array if label in max_point_class)
 
     def compute_weights(self, data, method):
         features = data.loc[:, data.columns != 'y_true']
         labels = data.loc[:,'y_true']
-
         return FeatureSelection(features, labels, method, self.k_weights).compute_weights()
         
-        # if method == 'equal':
-        #     return np.ones_like(data.iloc[0])
-        # elif method == 'correlation':
-        #     return abs(pd.concat([data,labels], axis=1).corr()['y_true'][:-1].values) 
-        # elif method == 'information_gain':
-        #     return mutual_info_classif(data, np.squeeze(labels))
 
     def evaluate_accuracy(self, predictions, true_labels):
         correct_count = sum(1 for pred, true_label in zip(predictions, true_labels) if pred == true_label)
@@ -129,8 +119,11 @@ class KIBL:
         else:
             train_normalized=self.X
             test_normalized=test_data
-         
+        
         print('----Data normalized----')  
+
+        if self.instance_selection in ['MCNN', 'ENN', 'IB3']:
+            train_normalized = InstanceSelection(train_normalized, self.K, self.instance_selection).refine_dataset()
 
         self.weights = self.compute_weights(train_normalized, self.weights_m)
 
@@ -160,17 +153,16 @@ class KIBL:
                 neighbour_class, counts=np.unique(neighbors_labels,  return_counts=True)
                 majority_cases=max(counts)
                 dd=(self.K-majority_cases)/((len(neighbour_class)-1)*majority_cases)
-          
+    
                 if dd>=0.5: 
                     retained_instance = instance
                 else:
                     retained_instance = None
-      
+    
             if retained_instance is not None:
-                # self.X = np.vstack([self.X, retained_instance])   
                 self.X=pd.concat([self.X,pd.DataFrame(retained_instance.reshape(1,-1),columns=self.X.columns)],ignore_index=True)
-                # train_normalized = np.vstack([train_normalized, retained_instance])
                 train_normalized=pd.concat([train_normalized,pd.DataFrame(retained_instance.reshape(1,-1),columns=train_normalized.columns)],ignore_index=True)
+            
             end_time = time.time()
             problem_solving_times.append(end_time - start_time)
 
