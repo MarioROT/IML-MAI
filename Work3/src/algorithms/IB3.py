@@ -3,7 +3,7 @@ from sklearn.metrics import euclidean_distances
 from scipy.stats import norm
 import numpy as np
 import pandas as pd
-from KIBL import KIBL
+from algorithms.KIBL import KIBL
 from utils.data_preprocessing import Dataset
 
 

@@ -2,8 +2,13 @@ import time
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
-from feature_selection import FeatureSelection
-from instance_selection import InstanceSelection
+from algorithms.feature_selection import FeatureSelection
+# from algorithms.instance_selection import InstanceSelection
+from sklearn.metrics import euclidean_distances
+from sklearn.metrics import euclidean_distances
+from scipy.stats import norm
+from datetime import datetime
+from collections import Counter
 
 class KIBL:
     def __init__(self, 
@@ -13,9 +18,11 @@ class KIBL:
                  retention='NR', 
                  feature_selection = 'ones', 
                  k_fs = 'nonzero',
-                 instance_selection = 'None'
+                 instance_selection = 'None',
                  normalize=False,
-                 store_used_neighbors = False):
+                 store_used_neighbors = False,
+                 save = False):
+
         print("-------Performing K-IBL-------")
         self.X=X
         self.K=K
@@ -26,6 +33,7 @@ class KIBL:
         self.instance_selection = instance_selection
         self.normalize=normalize
         self.store_used_neighbors = store_used_neighbors
+        self.save = save
         
     #Normalizing the train data
     def normalize_fun(self,X):
@@ -41,7 +49,7 @@ class KIBL:
                     new_v=(value-min_v)/(max_v-min_v)
                     data_normalized.loc[i,column]=new_v
 
-      return data_normalized
+            return data_normalized
 
     #Calculating the euc distance between two instances
     def euc_distance(self, test_row, train_row):
@@ -59,7 +67,7 @@ class KIBL:
         neighbors = np.array(distances[:self.K],dtype=object)[:,0]
         if self.store_used_neighbors:
              self.used_neighbors.append(np.array(distances[:self.K], dtype=object)[:, 2])
-      return neighbors
+        return neighbors
     
     #Predict the type according to the majority of neighbors
     def predict(self, neighbors):
@@ -123,7 +131,7 @@ class KIBL:
         print('----Data normalized----')  
 
         if self.instance_selection in ['MCNN', 'ENN', 'IB3']:
-            train_normalized = InstanceSelection(train_normalized, self.K, self.instance_selection).refine_dataset()
+            train_normalized = InstanceSelection(train_normalized, self.K, self.instance_selection, self.save).refine_dataset()
 
         self.weights = self.compute_weights(train_normalized, self.weights_m)
 
@@ -178,3 +186,215 @@ class KIBL:
         total_time= end_total_time-start_total_time
 
         return accuracy, efficiency, total_time         
+
+
+class InstanceSelection():
+    def __init__(self,
+                 data: pd.DataFrame,
+                 k_neighbors: int,
+                 method: str,
+                 save:str):
+        self.data = data
+        self.k_neighbors = k_neighbors
+        self.met_name = method 
+        self.methods = {'MCNN':self.modified_condensed_nearest_neighbors,
+                        'ENN':self.edited_nearest_neighbors,
+                        'IB3':preprocess_with_IB3}
+        self.method = self.methods[method]
+        self.save = save
+
+    def refine_dataset(self):
+        refined_dataset = self.method(self.data, self.k_neighbors)
+        if self.save:
+            name_date=str(datetime.now()).replace(" ","_").replace(":","_")
+            refined_dataset.to_csv(self.save + f'RefinedDataset_{self.met_name}_{name_date}.csv', index=False)
+        return refined_dataset
+
+    @staticmethod
+    def modified_condensed_nearest_neighbors(data, k_neighbors):
+        features = data.loc[:, data.columns != 'y_true']
+        labels = data.loc[:,'y_true']
+
+        # Step 1: Initialize with one prototype from each class
+        unique_classes = np.unique(labels)
+        prototypes = pd.DataFrame(columns=data.columns)
+
+        for class_label in unique_classes:
+            class_instances = features[labels == class_label]
+            centroid = InstanceSelection.compute_centroid(class_instances)
+            closest_index = class_instances.iloc[[InstanceSelection.find_closest_instance(centroid, class_instances)]].index
+            prototypes = pd.concat([prototypes, data.loc[closest_index]], ignore_index = True)
+
+        # prototypes = pd.read_csv('pen-based_FinalProts.csv', index_col=0)
+        i = 0
+        # Step 2. Interative refinement until all instances are correctly classified
+        while True:
+            # Train a k-nearest neighbors classifier with the current prototypes
+            classifier = KIBL(X=prototypes, K=k_neighbors)
+
+            # Predict using the current prototypes
+            classifier.kIBLAlgorithm(data)
+            predictions = classifier.predictions
+
+            # Check for misclassifications
+            misclassified_instances = data.loc[predictions != data['y_true']]
+            misclassified_features = misclassified_instances.loc[:, data.columns != 'y_true']
+            misclassified_labels = misclassified_instances.loc[:, 'y_true']
+            
+            if len(misclassified_instances) == 0:
+                break # All instances are correctly classified
+            
+            # Add representative instances for the current class for class_label in unique classes:
+            for class_label in unique_classes:
+                # Get misclassified instances for the current class
+                class_misclassified_instances = misclassified_features[misclassified_labels == class_label]
+
+                if len(class_misclassified_instances) > 0:
+                    centroid = InstanceSelection.compute_centroid(class_misclassified_instances)
+                    closest_index = class_misclassified_instances.iloc[[InstanceSelection.find_closest_instance(centroid, class_misclassified_instances)]].index
+                    prototypes = pd.concat([prototypes, misclassified_instances.loc[closest_index]], ignore_index = True)
+            i += 1
+            print(f'Iteration: {i+1} - Misclassified Instances {len(misclassified_instances)}')
+
+        # prototypes = pd.read_csv('pen-based MCNN.csv')
+            
+        # Step 3: Deletion Operator
+        classifier = KIBL(X=prototypes, K=1, store_used_neighbors=True)
+        classifier.kIBLAlgorithm(data)
+
+        # Identify prototypes that participate in classification
+        used_neighbors, counts = np.unique(classifier.used_neighbors, return_counts=True)
+
+        participating_prototypes = used_neighbors[counts > 1]
+
+        # Filter prototypes to keep only those that participate in classificationp.unique(classifier.used_neighbors, return_counts=True)[1]nnp.unique(classifier.used_neighbors, return_counts=True)[1A]
+        final_prototypes = prototypes.loc[participating_prototypes]
+
+        return final_prototypes
+
+    @staticmethod
+    def edited_nearest_neighbors(data, k_neighbors):
+        X = data.iloc[:, :-1].values
+        y = data.iloc[:, -1].values
+
+        kibl_instance = KIBL(X=data, K=k_neighbors)
+
+        # Step 1: Train a K-IBL model
+        kibl_instance.kIBLAlgorithm(data)
+
+        # Step 2: Identify instances with different predicted class than the majority of their k-nearest neighbors
+        to_remove = []
+
+        for i in range(data.shape[0]):  # Iterate over instances in the original data
+            instance = data.iloc[i]
+            neighbors = kibl_instance.get_neighbors(data, instance)
+
+            # Check if the predicted class is different from the majority class in the neighbors
+            neighbors_labels = [row[-1] for row in neighbors]
+            majority_class = Counter(neighbors_labels).most_common(1)[0][0]
+            predicted_class = kibl_instance.predict(neighbors)
+            if predicted_class != majority_class:
+                to_remove.append(i)
+
+        # Step 3: Remove instances with different predicted class
+        data_resampled = np.delete(X, to_remove, axis=0)
+        labels_resampled = np.delete(y, to_remove)
+
+        X_resampled = pd.DataFrame(data_resampled, columns=data.columns[:-1])
+        y_resampled = pd.Series(labels_resampled, name=data.columns[-1])
+
+        data_resampled = X_resampled.copy()
+        data_resampled['y_true'] = y_resampled
+        return data_resampled
+        
+    @staticmethod
+    def compute_centroid(X):
+        # compute the centroid of a set of instances
+        return X.mean()
+    @staticmethod
+    def find_closest_instance(centroid, instances):
+        # Find the instance closest to the centroid
+        distances = np.linalg.norm(instances - centroid, axis=1)
+        closest_index = np.argmin(distances)
+        return closest_index
+
+class IB3:
+    def __init__(self, confidence_accept=0.9, confidence_drop=0.7):
+        self.S = []  # Set of stored instances
+        self.confidence_accept = confidence_accept
+        self.confidence_drop = confidence_drop
+        self.class_freq = {}  # Frequency of each class
+        self.total_instances = 0
+
+    def fit(self, X, y):
+        for instance, label in zip(X, y):
+            self.total_instances += 1
+            self.class_freq[label] = self.class_freq.get(label, 0) + 1
+
+            nearest_instance, nearest_label = self.find_nearest_acceptable_instance(instance)
+            if nearest_label != label:
+                self.S.append({'instance': instance, 'label': label, 'correct': 0, 'total': 0})
+
+            for stored_instance in self.S:
+                if self.is_at_least_as_close(instance, stored_instance['instance'], nearest_instance):
+                    stored_instance['total'] += 1
+                    if stored_instance['label'] == label:
+                        stored_instance['correct'] += 1
+
+            self.S = [s for s in self.S if self.is_acceptable(s)]
+
+    def find_nearest_acceptable_instance(self, instance):
+        if not self.S:
+            return None, None
+
+        distances = euclidean_distances([instance], [s['instance'] for s in self.S])[0]
+        nearest_index = np.argmin(distances)
+        return self.S[nearest_index]['instance'], self.S[nearest_index]['label']
+
+    def is_at_least_as_close(self, instance, candidate, nearest):
+        if nearest is None:
+            return True
+        return np.linalg.norm(instance - candidate) <= np.linalg.norm(instance - nearest)
+
+
+    def is_acceptable(self, instance):
+        n = instance['total']
+        if n == 0:
+            return False
+
+        p = instance['correct'] / n
+        z_accept = norm.ppf(self.confidence_accept)
+        z_drop = norm.ppf(self.confidence_drop)
+
+        # Upper and lower bounds for acceptability and dropping
+        lower_bound_accept = self.confidence_interval(p, n, z_accept)[0]
+        upper_bound_drop = self.confidence_interval(p, n, z_drop)[1]
+
+        class_freq = self.class_freq[instance['label']] / self.total_instances
+        upper_bound_class = self.confidence_interval(class_freq, self.total_instances, z_accept)[1]
+        lower_bound_class = self.confidence_interval(class_freq, self.total_instances, z_drop)[0]
+
+        return lower_bound_accept > upper_bound_class or p > upper_bound_drop < lower_bound_class
+
+    def confidence_interval(self, p, n, z):
+        # Calculating the confidence interval
+        factor = z * np.sqrt(p * (1 - p) / n + z ** 2 / (4 * n ** 2))
+        lower = (p + z ** 2 / (2 * n) - factor) / (1 + z ** 2 / n)
+        upper = (p + z ** 2 / (2 * n) + factor) / (1 + z ** 2 / n)
+        return lower, upper
+        
+    def remove_low_confidence_instances(self):
+        """Remove instances with low confidence from the stored instances."""
+        self.S = [instance for instance in self.S if self.is_acceptable(instance)]
+
+
+
+def preprocess_with_IB3(data, k):    
+    X, y = data.iloc[:, :-1], data.iloc[:, -1]
+    ib3 = IB3()
+    ib3.fit(X.values, y.values)
+    X_refined, y_refined = zip(*[(s['instance'], s['label']) for s in ib3.S])
+    
+    data_refined = pd.DataFrame(np.vstack([np.array(X_refined).T,np.array(y_refined)]).T, columns = data.columns)
+    return data_refined
+

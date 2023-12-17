@@ -1,10 +1,10 @@
-import sys
-sys.path.append('../')
+# import sys
+# sys.path.append('../')
 import time
 import numpy as np
 import pandas as pd
-from KIBL import KIBL
-from IB3 import preprocess_with_IB3
+# from algorithms.KIBL_alg import KIBL
+from algorithms.IB3 import preprocess_with_IB3
 from collections import Counter
 from utils.data_preprocessing import Dataset
 from sklearn.metrics import euclidean_distances
@@ -16,9 +16,9 @@ class InstanceSelection():
                  method: str):
         self.data = data
         self.k_neighbors = k_neighbors
-        self.methods{'MCNN':self.modified_condensed_nearest_neighbors,
-                     'ENN':self.edited_nearest_neighbors,
-                     'IB3':preprocess_with_IB3}
+        self.methods = {'MCNN':self.modified_condensed_nearest_neighbors,
+                        'ENN':self.edited_nearest_neighbors,
+                        'IB3':preprocess_with_IB3}
         self.method = self.methods[method]
 
     def refine_dataset():
