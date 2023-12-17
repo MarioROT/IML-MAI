@@ -3,9 +3,8 @@ from sklearn.metrics import euclidean_distances
 from scipy.stats import norm
 import numpy as np
 import pandas as pd
-from KIBL import KIBL
+from algorithms.KIBL import KIBL
 from utils.data_preprocessing import Dataset
-
 
 
 class IB3:
@@ -46,7 +45,6 @@ class IB3:
             return True
         return np.linalg.norm(instance - candidate) <= np.linalg.norm(instance - nearest)
 
-
     def is_acceptable(self, instance):
         n = instance['total']
         if n == 0:
@@ -72,21 +70,21 @@ class IB3:
         lower = (p + z ** 2 / (2 * n) - factor) / (1 + z ** 2 / n)
         upper = (p + z ** 2 / (2 * n) + factor) / (1 + z ** 2 / n)
         return lower, upper
-        
+
     def remove_low_confidence_instances(self):
         """Remove instances with low confidence from the stored instances."""
         self.S = [instance for instance in self.S if self.is_acceptable(instance)]
 
 
-
-def preprocess_with_IB3(data, k):    
+def preprocess_with_IB3(data, k):
     X, y = data.iloc[:, :-1], data.iloc[:, -1]
     ib3 = IB3()
     ib3.fit(X.values, y.values)
     X_refined, y_refined = zip(*[(s['instance'], s['label']) for s in ib3.S])
-    
-    data_refined = pd.DataFrame(np.vstack([x.T,y]).T, columns = data.columns)
+
+    data_refined = pd.DataFrame(np.vstack([x.T, y]).T, columns=data.columns)
     return data_refined
+
 
 # def preprocess_with_IB3(X, y):
 #     ib3 = IB3()
@@ -108,7 +106,7 @@ X_test, y_test = test.iloc[:, :-1], test.iloc[:, -1]
 data_refined = preprocess_with_IB3(train, '')
 
 X_refined = data_refined.loc[:, data.columns != 'y_true']
-y_refined= data_redined.loc[:,'y_true']
+y_refined = data_redined.loc[:, 'y_true']
 
 refined = pd.DataFrame(X_refined, columns=train.columns[:-1])
 
