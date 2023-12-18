@@ -16,6 +16,8 @@ Work3/
 │   
 └── data/
    
+```
+
 ### Setup the environment
 
 These sections show how to create a virtual environment for our script and how to install dependencies.
