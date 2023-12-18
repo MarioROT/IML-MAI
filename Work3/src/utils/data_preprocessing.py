@@ -46,7 +46,7 @@ class Dataset():
         if not self.folds:
             self.preprocessing()
         else: 
-            self.fold_paths = os.listdir(self.data_path)
+            self.fold_paths = sorted(os.listdir(self.data_path))
 
     def __len__(self):
         return len(self.df)
