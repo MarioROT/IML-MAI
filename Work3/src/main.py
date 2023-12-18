@@ -19,27 +19,36 @@ parser.add_argument("-ret", "--retention", nargs='+', help = "['NR':Never_Retain
 parser.add_argument("-fs", "--feature_selection", nargs='+', help = "['ones', 'CR':Correlation, 'IG':Information Gain,'C2S':Chi Square Stat, 'VT':Variance Treshold, 'MI':Mutual Inf.,'C2': ChiSq. SKL, 'RF': Relief]", default=['ones'])
 parser.add_argument("-kfs", "--k_fs", nargs='+', help = "['nonzero', 'n%' -> e.g. '80%']", default=['80%'])
 parser.add_argument("-is", "--instance_selection", nargs='+', help = "['None','MCNN':Modif. Cond NN, 'ENN':Edited NNR, 'IBL3']", default=['None'])
+parser.add_argument("-sd", "--sample_data", help="[2,3]", default=None)
 
 args = parser.parse_args()
 
 experiment_params = {
-                     'BPS':{'ds':args.datasets,'K':[3,5,7],'voting': ['MP', 'BC'], 'retention':['NR', 'AR', 'DF', 'DD']},
-                     'BFS':{'ds':args.datasets,'K':args.nearest_neighbors, 'voting':args.voting, 'retention':args.retention, 'feature_selection':['ones','CR','IG','C2S','VT','MI','C2'], 'k_fs':args.k_fs},
-                     'BIS':{'ds':args.datasets,'K':args.nearest_neighbors, 'voting':args.voting, 'retention':args.retention, 'instance_selection':['MCNN','ENN','IB3']},
-                     'Custom':{'fs':args.datasets, 'K':args.nearest_neighbors, 'voting':args.voting, 'retention':args.retention, 'feature_selection':args.feature_selection, 'k_fs':args.k_fs,'instance_selection':args.instance_selection} 
-                    }
+    'BPS': {'ds': args.datasets, 'K': [3, 5, 7], 'voting': ['MP', 'BC'], 'retention': ['NR', 'AR', 'DF', 'DD']},
+    'BFS': {'ds': args.datasets, 'K': args.nearest_neighbors, 'voting': args.voting, 'retention': args.retention,
+            'feature_selection': ['ones','CR', 'IG', 'C2S', 'VT', 'MI', 'C2'], 'k_fs': args.k_fs},
+    'BIS': {'ds': args.datasets, 'K': args.nearest_neighbors, 'voting': args.voting, 'retention': args.retention,
+            'instance_selection': ['MCNN','ENN','IB3']},
+    'Custom': {'ds': args.datasets, 'K': args.nearest_neighbors, 'voting': args.voting, 'retention': args.retention,
+               'feature_selection': args.feature_selection, 'k_fs': args.k_fs,
+               'instance_selection': args.instance_selection}
+}
 
 experiment = experiment_params[args.experiment]
-parameters=BestParamsSearch(experiment)
+parameters = BestParamsSearch(experiment)
 
-results = pd.DataFrame(columns=['params','folds','accuracies','efficiencies','total_times'])
-name_date=str(datetime.now()).replace(" ","_").replace(":","_")
+results = pd.DataFrame(columns=['params', 'folds', 'accuracies', 'efficiencies', 'total_times'])
+name_date = str(datetime.now()).replace(" ", "_").replace(":", "_")
 save_in = f'../results/Experiment_{args.experiment}_{name_date}/'
 os.mkdir(save_in)
 
-for k,params in parameters.items():
-    data = Dataset(f"../data/folded/{params['ds']}",cat_transf='ordinal', folds=True)
+
+for k, params in parameters.items():
+    data = Dataset(f"../data/folded/{params['ds']}", cat_transf='onehot', folds=True)
     for i, (train, test) in enumerate(data):
+        if args.sample_data:
+            train = train.groupby('y_true').head(len(train)/int(args.sample_data)/len(train['y_true'].unique()))
+            test = test.groupby('y_true').head(len(test)/int(args.sample_data)/len(test['y_true'].unique()))
         if 'ds' in params.keys():
             params.pop('ds')
         
