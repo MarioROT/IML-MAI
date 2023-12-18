@@ -22,9 +22,9 @@ parser.add_argument("-ret", "--retention", nargs='+',
                     help="['NR':Never_Retain,'AR':Always_Retain,'DF':Different Class Ret,'DD':Degree disagreement]",
                     default=['NR'])
 parser.add_argument("-fs", "--feature_selection", nargs='+',
-                    help="['Ones', 'CR':Correlation, 'IG':Information Gain,'C2S':Chi Square Stat, 'VT':Variance Treshold, 'MI':Mutual Inf.,'C2': ChiSq. SKL, 'RF': Relief]",
-                    default=['Ones'])
-parser.add_argument("-kfs", "--k_fs", help="['nonzero', 'n%' -> e.g. '80%']", default='80%')
+                    help="['ones', 'CR':Correlation, 'IG':Information Gain,'C2S':Chi Square Stat, 'VT':Variance Treshold, 'MI':Mutual Inf.,'C2': ChiSq. SKL, 'RF': Relief]",
+                    default=['ones'])
+parser.add_argument("-kfs", "--k_fs", help="['nonzero', 'n%' -> e.g. '80%']", default=['80%'])
 parser.add_argument("-is", "--instance_selection", nargs='+',
                     help="['None','MCNN':Modif. Cond NN, 'ENN':Edited NNR, 'IBL3']", default=['None'])
 
@@ -33,9 +33,9 @@ args = parser.parse_args()
 experiment_params = {
     'BPS': {'ds': args.datasets, 'K': [3, 5, 7], 'voting': ['MP', 'BC'], 'retention': ['NR', 'AR', 'DF', 'DD']},
     'BFS': {'ds': args.datasets, 'K': args.nearest_neighbors, 'voting': args.voting, 'retention': args.retention,
-            'feature_selection': ['IG', 'C2S'], 'k_fs': args.k_fs},
+            'feature_selection': ['ones','CR', 'IG', 'C2S', 'VT', 'MI', 'C2', 'RF'], 'k_fs': args.k_fs},
     'BIS': {'ds': args.datasets, 'K': args.nearest_neighbors, 'voting': args.voting, 'retention': args.retention,
-            'instance_selection': args.instance_selection},
+            'instance_selection': ['MCNN','ENN','IB3']},
     'Custom': {'fs': args.datasets, 'K': args.nearest_neighbors, 'voting': args.voting, 'retention': args.retention,
                'feature_selection': args.feature_selection, 'k_fs': args.k_fs,
                'instance_selection': args.instance_selection}
