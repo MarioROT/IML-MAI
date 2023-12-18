@@ -288,7 +288,7 @@ class InstanceSelection():
         kibl_instance = KIBL(X=data, K=k_neighbors)
 
         # Step 1: Train a K-IBL model
-        kibl_instance.kIBLAlgorithm(data)
+        #kibl_instance.kIBLAlgorithm(data)
 
         # Step 2: Identify instances with different class than the majority of their k-nearest neighbors
         new_train_data = []
@@ -303,6 +303,7 @@ class InstanceSelection():
                 new_train_data.append(instance)
 
         return pd.DataFrame(new_train_data, columns=data.columns)
+
 
     @staticmethod
     def compute_centroid(X):
