@@ -17,7 +17,7 @@ parser.add_argument("-k", "--nearest_neighbors", nargs='+', help = "[3, 5, 7]", 
 parser.add_argument("-vot", "--voting", nargs='+', help = "['MP':Modified_Plurality,'BC':Borda_Count']", default=['MP'])
 parser.add_argument("-ret", "--retention", nargs='+', help = "['NR':Never_Retain,'AR':Always_Retain,'DF':Different Class Ret,'DD':Degree disagreement]", default=['NR'])
 parser.add_argument("-fs", "--feature_selection", nargs='+', help = "['ones', 'CR':Correlation, 'IG':Information Gain,'C2S':Chi Square Stat, 'VT':Variance Treshold, 'MI':Mutual Inf.,'C2': ChiSq. SKL, 'RF': Relief]", default=['ones'])
-parser.add_argument("-kfs", nargs='+', "--k_fs", help = "['nonzero', 'n%' -> e.g. '80%']", default=['80%'])
+parser.add_argument("-kfs", "--k_fs", nargs='+', help = "['nonzero', 'n%' -> e.g. '80%']", default=['80%'])
 parser.add_argument("-is", "--instance_selection", nargs='+', help = "['None','MCNN':Modif. Cond NN, 'ENN':Edited NNR, 'IBL3']", default=['None'])
 
 args = parser.parse_args()
