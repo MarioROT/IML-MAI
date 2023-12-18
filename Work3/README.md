@@ -1,57 +1,21 @@
-# Introduction to Machine Learning
-## Work 1 - Clustering Exercise
 
-Work1: Laboratory project deliveries for the Introduction to Machine Learning (IML) course of the Master in Artificial Intelligence at UPC.
+## Overview
+"Work 3" is part of the Introduction to Machine Learning course for the Master in Artificial Intelligence at UPC, it focuses on Lazy learning.
 
-This project contains the implementation of following algorithms:
-
- - DBSCAN (sklearn)
- - Birch (sklearn)
- - K-Means, K-modes (our code)
- - K-Prototypes (our code)
- - Fuzzy C-Means (our code)
-
-
-
-### Directory Structure
-
+## Directory Structure
 ```
-work1/
+Work3/
 │
-├── data/
-│   ├── raw/
-│   │   ├── waveform.arff
-│   │   ├── dataset_24_mushroom.arff
-│   │   ├── iris.arff
-│   │   ├── vowel.arff
-│   │   └── kr-vs-kp.arff
-│
-├── src/
-│   ├── algorithms/
-│   │   ├── fcm_py.py - Fuzzy C-Means clustering algorithm implementation
-│   │   ├── kmeans.py - K-Means clustering algorithm implementation
-│   │   ├── BIRCH.py - BIRCH clustering algorithm implementation
-│   │   ├── kprototypes.py - K-Prototypes clustering algorithm implementation
-│   │   ├── DBSCAN.py - DBSCAN clustering algorithm implementation
-│   │   └── kmodes.py - K-Modes clustering algorithm implementation
-│   ├── evaluation/
-│   │   └── metrics.py - Evaluation metrics for clustering algorithms
-│   ├── utils/
-│   │   ├── analysis_kr-vs-kp.py - Analysis utility for the kr-vs-kp dataset
-│   │   ├── data_preprocessing.py - Data preprocessing utility
-│   │   ├── analysis_vowel.py - Analysis utility for the vowel dataset
-│   │   ├── best_params_search.py - Utility for searching the best parameters
-│   │   └── analysis_waveform.py - Analysis utility for the waveform dataset
-│   ├── main.py - Main script for executing the project's primary functionality
-│   └── test_performance.py - Script dedicated to performance testing of implemented algorithms
-│
-├── tests/
-│   ├── DataPreprocessing.ipynb - Jupyter notebook for testing data preprocessing functions
-│   └── FCM.py - Test script for the Fuzzy C-Means clustering algorithm
-│
-├── requirements.txt - List of project dependencies
-└── environment.yml - Conda environment configuration file
-
+├── src/ main.py
+├── utils/
+│   ├── data_preprocessing.py
+│   ├── StatTest.py
+│   ├── best_params_search.py
+│   └── ...
+├── algorithms/
+│   
+└── data/
+   
 ```
 
 ### Setup the environment
@@ -86,6 +50,17 @@ pip list
 ```bash
 deactivate
 ```
+### Or Setup the Environment using Conda
+
+1. **Open a Terminal**: Navigate to the 'Work2' folder in your terminal.
+2. **Create the Conda Environment**: Execute the following command to create a Conda environment using the `environment.yml` file:
+   ```
+   conda env create -f environment.yml
+   ```
+3. **Activate the Environment**: Once the environment is created, activate it with the command:
+   ```
+   conda activate IML8
+   ```
 
 ## Execute scripts
 
@@ -97,36 +72,30 @@ source venv/bin/activate
 2. Running the main script: main.py - Be sure to run the file from `src` directory
 Arguments to choose:
 ```bash
-- '-ds' or '--datasets': Specify the datasets you want to perform clustering on. Available options: 'iris', 'vowel', 'waveform', 'kr-vs-kp'.
-- '-ags' or '--algorithms': Choose clustering algorithms to apply. Available options: 'kmeans', 'kmodes', 'kprot', 'fcm', 'dbscan', 'birch'.
-- '-bp' or '--best_params': Set to 'True' if you want to search for the best algorithm parameters (default is 'True').
-- '-dsm' or '--dataset_method': Specify the dataset type: 'numeric', 'categorical', or 'mixed' (default is 'numeric').
-- '-ce' or '--cat_encoding': Choose categorical encoding: 'onehot' or 'ordinal' (default is 'onehot').
-- '-r' or '--random_seed': Set an integer value for the random seed (default is '55').
+
+- "-bp" or  "--experiment", Options: "['BPS':BestParamsSearch, 'BFS':BestFeatureSelection,'BIS':'BestInstanceSelection']".
+- "-ds"or "--datasets", nargs='+', Options: "['pen-based','vowel', 'kr-vs-kp']".
+- "-k" or "--nearest_neighbors", nargs='+', Options: "[3, 5, 7]".
+- "-vot" or "--voting", nargs='+', Options: "['MP':Modified_Plurality,'BC':Borda_Count']".
+- "-ret" or "--retention", nargs='+', Options: "['NR':Never_Retain,'AR':Always_Retain,'DF':Different Class Ret,'DD':Degree disagreement]".
+- "-fs" or "--feature_selection": Options: "['ones', 'CR':Correlation, 'IG':Information Gain,'C2S':Chi Square Stat, 'VT':Variance Treshold, 'MI':Mutual Inf.,'C2': ChiSq. SKL, 'RF': Relief]".
+- "-kfs" or "--k_fs": Options:"['nonzero', 'n%' -> e.g. '80%']".
+- "-is" or "--instance_selection", Options: "['None','MCNN':Modif. Cond NN, 'ENN':Edited NNR, 'IBL3']".
+- "-sd" or "--sample_data": Options:"[2,3]".s
+
 ```
 
-For example, to run the script for the `iris` dataset using the `kprot` and `kmeans` algorithms:
-```bash
-python3 main.py -ds <dataset_name> -ags <algorithm_1> <algorithm_2> ...
+## Usage
+To run the `main.py` script:
 ```
-```bash
-python3 main.py -ds iris -ags kprot kmeans
+python main.py [OPTIONS]
 ```
 
-3. When finish, deactivate the virtual environment
-```bash
-deactivate
+### Example
+```
+python main.py -bp=BIS -k=7 --voting=BC -ret=DF -is=IB3
 ```
 
-## Analyzing the data
-Inside the `src/utils` directory, there are three scripts tailored for in-depth analysis of the datasets. Each script provides unique insights and generates specific plots.
-```bash
-- analysis_kr-vs-kp.py
-- analysis_vowel.py
-- analysis_waveform.py
-```
-To execute them, just run:
-```bash
-python3 <analysis_script.py>
-```
-
+### Notes
+- Make sure to navigate to the 'src' directory within 'Work3' before running the `main.py` script.
+- These instructions assume you have Conda installed and set up on your system. If not, please install Conda from [Anaconda's official website](https://www.anaconda.com/products/individual).
