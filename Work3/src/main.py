@@ -50,7 +50,8 @@ for k,params in parameters.items():
                'folds':[i],
                'accuracies':[accuracy],
                'efficiencies':[efficiency],
-               'total_times':[total_time]}
+               'total_times':[total_time],
+               'Reduced Features':[IBL.weights.count(0)]}
         
         results = pd.concat([results, pd.DataFrame(res)], ignore_index = True)
         results.to_csv(save_in + f'Results_KIBL_{name_date}.csv', index=False)

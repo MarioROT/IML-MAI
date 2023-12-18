@@ -1,0 +1,4 @@
+params,folds,accuracies,efficiencies,total_times
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",0,0.9675675675675676,0.0031416957442824906,1.163120985031128
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",1,0.9513513513513514,0.0032075830408044765,1.1875061988830566
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",2,0.9648648648648649,0.0031896352767944334,1.1807873249053955
