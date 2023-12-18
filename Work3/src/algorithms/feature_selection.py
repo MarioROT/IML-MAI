@@ -16,8 +16,14 @@ class FeatureSelection():
         self.features = features
         self.labels = labels
         methods = {'ones':self.ones,
-                   'information_gain': self.information_gain,
-                   'correlation': self.correlation}
+                   'IG': self.information_gain,
+                   'CR': self.correlation,
+                   'C2S' self.chi_square_statistic,
+                   'VT': self.variance_threshold,
+                   'MI': self.mutual_info_cls,
+                   'C2': self.chi2_skl,
+                   'RF':self.reliefF_sk
+                   }
         self.method = methods[method]
         if selection == 'nonzero' or isinstance(selection, int):
             self.selection = selection
