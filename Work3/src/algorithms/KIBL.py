@@ -25,7 +25,7 @@ class KIBL:
 
         print("-------Performing K-IBL-------")
         self.X=X
-        self.K=K
+        self.K=int(K)
         self.voting=voting  #MP: Modified Plurality , BC: Borda Count 
         self.retention=retention #NR: Never Retains, . Always retain (AR) Different Class retention (DF). Degree of Disagreement (DD).
         self.weights_m = feature_selection

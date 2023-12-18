@@ -18,7 +18,7 @@ class FeatureSelection():
         methods = {'ones':self.ones,
                    'IG': self.information_gain,
                    'CR': self.correlation,
-                   'C2S' self.chi_square_statistic,
+                   'C2S': self.chi_square_statistic,
                    'VT': self.variance_threshold,
                    'MI': self.mutual_info_cls,
                    'C2': self.chi2_skl,
