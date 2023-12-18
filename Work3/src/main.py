@@ -43,8 +43,8 @@ for k,params in parameters.items():
         if 'ds' in params.keys():
             params.pop('ds')
         
-        IBL=KIBL(train.iloc[:100],save = save_in, **params)
-        accuracy, efficiency, total_time = IBL.kIBLAlgorithm(test.iloc[:20])
+        IBL=KIBL(train,save = save_in, **params)
+        accuracy, efficiency, total_time = IBL.kIBLAlgorithm(test)
 
         res = {'params':[k],
                'folds':[i],
