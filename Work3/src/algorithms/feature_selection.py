@@ -30,6 +30,7 @@ class FeatureSelection():
             self.selection = selection
         elif isinstance(selection, str) and '%' in selection:
             self.selection = round(features.shape[1] * int(selection[:-1]) / 100)
+            # self.selection = selection
 
         self.selection = 'nonzero' if method in ['ones', 'variance_threshold'] else self.selection
         self.method_params = method_params if method_params else {}
@@ -40,8 +41,11 @@ class FeatureSelection():
         if self.selection == 'nonzero':
             return [1 if v>0 else 0 for v in scored_feats.values()]
         else:
-            feats_ranked = dict(sorted(scored_feats.items(), key=lambda item:item[1])[::-1][:self.selection])
-            return [1 if k in feats_ranked.keys() else 0 for k in scored_feats.keys()]
+            max = sorted(scored_feats.items(), key=lambda item:item[1])[::-1][0][1]
+            feats_ranked = dict(sorted(scored_feats.items(), key=lambda item:item[1])[::-1])
+            return [1 if feats_ranked[k] > max/2 else 0 for k in scored_feats.keys()]
+            # feats_ranked = dict(sorted(scored_feats.items(), key=lambda item:item[1])[::-1][:self.selection])
+            # return [1 if k in feats_ranked.keys() else 0 for k in scored_feats.keys()]
 
     def reliefF_sk(self, features, labels):
         rel = ReliefF(n_features = self.selection)
