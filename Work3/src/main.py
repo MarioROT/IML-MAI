@@ -37,7 +37,7 @@ experiment_params = {
             'feature_selection': ['ones','CR', 'IG', 'C2S', 'VT', 'MI', 'C2'], 'k_fs': args.k_fs},
     'BIS': {'ds': args.datasets, 'K': args.nearest_neighbors, 'voting': args.voting, 'retention': args.retention,
             'instance_selection': ['MCNN','ENN','IB3']},
-    'Custom': {'fs': args.datasets, 'K': args.nearest_neighbors, 'voting': args.voting, 'retention': args.retention,
+    'Custom': {'ds': args.datasets, 'K': args.nearest_neighbors, 'voting': args.voting, 'retention': args.retention,
                'feature_selection': args.feature_selection, 'k_fs': args.k_fs,
                'instance_selection': args.instance_selection}
 }
