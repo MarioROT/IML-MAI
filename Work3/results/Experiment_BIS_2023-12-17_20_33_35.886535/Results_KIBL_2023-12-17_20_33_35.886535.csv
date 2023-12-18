@@ -1,0 +1,21 @@
+params,folds,accuracies,efficiencies,total_times
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",0,0.9817850637522769,0.0011276979481153367,1.2390038967132568
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",1,0.9763421292083713,0.0011496730453866085,1.2642288208007812
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",2,0.9790337283500455,0.001150433323876686,1.2627630233764648
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",3,0.9790909090909091,0.0011519945751536976,1.2684268951416016
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",4,0.9781420765027322,0.0011630733590742713,1.2779748439788818
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",5,0.9790528233151184,0.0011346531261728979,1.2468678951263428
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",6,0.9818511796733213,0.001147029404198842,1.2647418975830078
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",7,0.9736363636363636,0.0011725284836509012,1.2905011177062988
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",8,0.9799635701275046,0.0011601020295328999,1.2774219512939453
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",9,0.9827586206896551,0.0012557201506654494,1.3846230506896973
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",0,0.7272727272727273,0.0010972528746633818,0.10907864570617676
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",1,0.7777777777777778,0.0009000542187931562,0.08952593803405762
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",2,0.7070707070707071,0.0009288619263003571,0.09216594696044922
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",3,0.7171717171717171,0.0007762451364536478,0.0769960880279541
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",4,0.7272727272727273,0.000804125660597676,0.07979488372802734
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",5,0.7171717171717171,0.0007807582315772471,0.07744526863098145
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",6,0.7575757575757576,0.0007696488890985046,0.07634162902832031
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",7,0.6868686868686869,0.0009131865067915483,0.09066605567932129
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",8,0.7575757575757576,0.0008945874493531507,0.08884978294372559
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'instance_selection': 'IB3'}",9,0.6363636363636364,0.0008066904665243746,0.08001899719238281
