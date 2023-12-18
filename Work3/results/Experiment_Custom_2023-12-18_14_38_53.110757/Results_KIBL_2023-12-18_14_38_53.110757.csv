@@ -1,0 +1,11 @@
+params,folds,accuracies,efficiencies,total_times
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",0,0.6666666666666666,0.004246979048757842,0.4233682155609131
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",1,0.6868686868686869,0.004011602112741181,0.3984501361846924
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",2,0.5757575757575758,0.0038820035529859138,0.38633155822753906
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",3,0.6363636363636364,0.004298092138887656,0.4265108108520508
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",4,0.6464646464646465,0.004164430830213759,0.41497206687927246
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",5,0.5555555555555556,0.00416146143518313,0.4119846820831299
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",6,0.6666666666666666,0.003926640809184373,0.38970160484313965
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",7,0.5757575757575758,0.005005797954520794,0.4975719451904297
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",8,0.7272727272727273,0.004109365771515201,0.4089052677154541
+"{'ds': 'vowel', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",9,0.5454545454545454,0.004096524884002377,0.4075465202331543
