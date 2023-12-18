@@ -2,8 +2,8 @@ import timeit
 from utils.data_preprocessing import Dataset
 from evaluation.metrics import performance_eval
 import argparse
-from KIBL import KIBL
-from instance_selection import InstanceSelection
+# from KIBL import KIBL
+# from instance_selection import InstanceSelection
 from utils.StatTest import Friedman_Nem
 import numpy as np
 import pandas as pd
@@ -24,7 +24,12 @@ from utils.best_params_search import BestParamsSearch
 
 # parameters=[]
 
-data = Dataset('../data/Dummy/', cat_transf='onehot', folds=True)
+data = Dataset('../data/folded/pen-based/', cat_transf='ordinal', folds=True)
+train,test=data[0]
+
+train = train.groupby('y_true').head(len(train)/2/len(train['y_true'].unique()))
+test = test.groupby('y_true').head(len(test)/2/len(test['y_true'].unique()))
+
 
 # agm = 'BestParamsSearch' if args.best_params else 'Custom'
 
@@ -32,7 +37,7 @@ data = Dataset('../data/Dummy/', cat_transf='onehot', folds=True)
         
         
 # train,test=data[0]
-train, test = pd.read_csv('../data/Dummy/eq_pen-based_300_train.csv', index_col=0), pd.read_csv('../data/Dummy/eq_pen-based_80_test.csv', index_col=0)
+# train, test = pd.read_csv('../data/Dummy/eq_pen-based_300_train.csv', index_col=0), pd.read_csv('../data/Dummy/eq_pen-based_80_test.csv', index_col=0)
 # IBL= KIBL(X=train, K=3, weights_m = 'information_gain', k_weights = '80%')   
 # IBL= KIBL(X=train, K=3)   
 # accuracy, efficiency, total_time= IBL.kIBLAlgorithm(test)

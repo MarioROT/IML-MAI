@@ -24,9 +24,10 @@ parser.add_argument("-ret", "--retention", nargs='+',
 parser.add_argument("-fs", "--feature_selection", nargs='+',
                     help="['ones', 'CR':Correlation, 'IG':Information Gain,'C2S':Chi Square Stat, 'VT':Variance Treshold, 'MI':Mutual Inf.,'C2': ChiSq. SKL, 'RF': Relief]",
                     default=['ones'])
-parser.add_argument("-kfs", "--k_fs", help="['nonzero', 'n%' -> e.g. '80%']", default=['80%'])
+parser.add_argument("-kfs", "--k_fs", nargs='+', help="['nonzero', 'n%' -> e.g. '80%']", default=['80%'])
 parser.add_argument("-is", "--instance_selection", nargs='+',
                     help="['None','MCNN':Modif. Cond NN, 'ENN':Edited NNR, 'IBL3']", default=['None'])
+parser.add_argument("-sd", "--sample_data", help="[2,3]", default=None)
 
 args = parser.parse_args()
 
@@ -53,6 +54,9 @@ os.mkdir(save_in)
 for k, params in parameters.items():
     data = Dataset(f"../data/folded/{params['ds']}", cat_transf='onehot', folds=True)
     for i, (train, test) in enumerate(data):
+        if args.sample_data:
+            train = train.groupby('y_true').head(len(train)/int(args.sample_data)/len(train['y_true'].unique()))
+            test = test.groupby('y_true').head(len(test)/int(args.sample_data)/len(test['y_true'].unique()))
         if 'ds' in params.keys():
             params.pop('ds')
 
