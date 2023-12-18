@@ -24,6 +24,7 @@ class FeatureSelection():
                    'C2': self.chi2_skl,
                    'RF':self.reliefF_sk
                    }
+        self.met_name = method
         self.method = methods[method]
         if selection == 'nonzero' or isinstance(selection, int):
             self.selection = selection
@@ -34,6 +35,7 @@ class FeatureSelection():
         self.method_params = method_params if method_params else {}
 
     def compute_weights(self):
+        print(f"Computing weights: {self.met_name}")
         scored_feats = self.method(self.features, self.labels,**self.method_params)
         if self.selection == 'nonzero':
             return [1 if v>0 else 0 for v in scored_feats.values()]
@@ -94,9 +96,9 @@ class FeatureSelection():
             # Chi-square statistic, p-value, degrees of freedom, and expected frequencies
             chi2v, p, dof, expected = chi2_contingency(observed_frequencies)
 
-            chi2s[features] = chi2v
+            chi2s[feature] = chi2v
         
-        return chi2
+        return chi2s
 
     @staticmethod
     def variance_threshold(features, labels):
@@ -112,7 +114,7 @@ class FeatureSelection():
 
     @staticmethod
     def chi2_skl(features, labels):
-        stats = chi2(features.values, labels.values)
+        stats,_ = chi2(features.values, labels.values)
         return {k:v for k,v in zip(features.columns, stats)}
 
 

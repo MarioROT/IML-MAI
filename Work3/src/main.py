@@ -33,7 +33,7 @@ args = parser.parse_args()
 experiment_params = {
     'BPS': {'ds': args.datasets, 'K': [3, 5, 7], 'voting': ['MP', 'BC'], 'retention': ['NR', 'AR', 'DF', 'DD']},
     'BFS': {'ds': args.datasets, 'K': args.nearest_neighbors, 'voting': args.voting, 'retention': args.retention,
-            'feature_selection': ['ones','CR', 'IG', 'C2S', 'VT', 'MI', 'C2', 'RF'], 'k_fs': args.k_fs},
+            'feature_selection': ['ones','CR', 'IG', 'C2S', 'VT', 'MI', 'C2'], 'k_fs': args.k_fs},
     'BIS': {'ds': args.datasets, 'K': args.nearest_neighbors, 'voting': args.voting, 'retention': args.retention,
             'instance_selection': ['MCNN','ENN','IB3']},
     'Custom': {'fs': args.datasets, 'K': args.nearest_neighbors, 'voting': args.voting, 'retention': args.retention,
