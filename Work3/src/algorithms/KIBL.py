@@ -274,38 +274,24 @@ class InstanceSelection():
 
     @staticmethod
     def edited_nearest_neighbors(data, k_neighbors):
-        X = data.iloc[:, :-1].values
-        y = data.iloc[:, -1].values
-
         kibl_instance = KIBL(X=data, K=k_neighbors)
 
         # Step 1: Train a K-IBL model
-        kibl_instance.kIBLAlgorithm(data)
+        #kibl_instance.kIBLAlgorithm(data)
 
-        # Step 2: Identify instances with different predicted class than the majority of their k-nearest neighbors
-        to_remove = []
+        # Step 2: Identify instances with different class than the majority of their k-nearest neighbors
+        new_train_data = []
 
         for i in range(data.shape[0]):  # Iterate over instances in the original data
             instance = data.iloc[i]
             neighbors = kibl_instance.get_neighbors(data, instance)
-
-            # Check if the predicted class is different from the majority class in the neighbors
             neighbors_labels = [row[-1] for row in neighbors]
-            majority_class = Counter(neighbors_labels).most_common(1)[0][0]
-            predicted_class = kibl_instance.predict(neighbors)
-            if predicted_class != majority_class:
-                to_remove.append(i)
 
-        # Step 3: Remove instances with different predicted class
-        data_resampled = np.delete(X, to_remove, axis=0)
-        labels_resampled = np.delete(y, to_remove)
+            # Step 3: Keep instances
+            if Counter(neighbors_labels).most_common(1)[0][0] == instance[-1]:
+                new_train_data.append(instance)
 
-        X_resampled = pd.DataFrame(data_resampled, columns=data.columns[:-1])
-        y_resampled = pd.Series(labels_resampled, name=data.columns[-1])
-
-        data_resampled = X_resampled.copy()
-        data_resampled['y_true'] = y_resampled
-        return data_resampled
+        return pd.DataFrame(new_train_data, columns=data.columns)
         
     @staticmethod
     def compute_centroid(X):
