@@ -5,3 +5,7 @@ params,folds,accuracies,efficiencies,total_times
 "{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",3,0.9648648648648649,0.003514409065246582,1.3011257648468018
 "{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",4,0.9675675675675676,0.0031842824575063346,1.1788837909698486
 "{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",5,0.9675675675675676,0.0031351856283239415,1.1607246398925781
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",6,0.9756756756756757,0.003131397350414379,1.1593101024627686
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",7,0.9540540540540541,0.0031356850185909786,1.160905122756958
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",8,0.9783783783783784,0.003048419952392578,1.1285507678985596
+"{'ds': 'pen-based', 'K': '7', 'voting': 'BC', 'retention': 'DF', 'feature_selection': 'ones', 'k_fs': '80%', 'instance_selection': 'MCNN'}",9,0.9783783783783784,0.0029049209646276526,1.075455665588379
